@@ -1,0 +1,3 @@
+board:
+    resource: ../../src/Module/Board/Application/Http/
+    type: annotation

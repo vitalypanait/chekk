@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace App\Module\Board\Application\Http\API\V1\Request;
 
 use App\Module\Common\Infrastructure\Request\IdentifierInterface;
+use OpenApi\Attributes as OA;
 
-readonly class TaskUpdateRequest implements IdentifierInterface
+class TaskUpdateRequest implements IdentifierInterface
 {
-    public function __construct(
-        private string $id,
-        private string $title,
-        private string $state,
-    ) {}
+    #[OA\Property(description: 'Title of the task', example: 'Let\'s start')]
+    private string $title;
 
-    public function getId(): string
+    #[OA\Property(description: 'State of the task', example: 'completed')]
+    private string $state;
+
+    public function __construct(string $title, string $state)
     {
-        return $this->id;
+        $this->title = $title;
+        $this->state = $state;
     }
 
     public function getTitle(): string

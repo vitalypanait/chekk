@@ -15,4 +15,6 @@ interface CommentRepository
      * @return Comment[]
      */
     public function findByTaskIds(array $taskIds): array;
+
+    public function getById(string $id): Comment;
 }

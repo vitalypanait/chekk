@@ -20,8 +20,10 @@ class CommentCreateHandler implements CommandHandler
     {
         $task = $this->taskRepository->getById($command->getTaskId());
 
-        $comment = new Comment($task, $command->getContext());
+        $comment = new Comment($task, $command->getContent());
 
         $this->commentRepository->save($comment);
+
+        $command->setId($comment->getId()->toString());
     }
 }

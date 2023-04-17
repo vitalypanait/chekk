@@ -23,5 +23,7 @@ class TaskCreateHandler implements CommandHandler
         $task = new Task($board, $command->getTitle());
 
         $this->taskRepository->save($task);
+
+        $command->setId($task->getId()->toString());
     }
 }

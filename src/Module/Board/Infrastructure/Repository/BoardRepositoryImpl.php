@@ -33,7 +33,6 @@ class BoardRepositoryImpl extends ServiceEntityRepository implements BoardReposi
             ->select('b')
             ->from(Board::class, 'b')
             ->andWhere('b.id = :id')
-            ->andWhere('b.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
             ->getSingleResult();

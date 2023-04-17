@@ -5,12 +5,20 @@ declare(strict_types=1);
 namespace App\Module\Board\Application\Http\API\V1\Request;
 
 use App\Module\Common\Infrastructure\Request\IdentifierInterface;
+use OpenApi\Attributes as OA;
 
-readonly class BoardUpdateRequest implements IdentifierInterface
+class BoardUpdateRequest implements IdentifierInterface
 {
-    public function __construct(
-        private string $title
-    ) {}
+    #[OA\Property(
+        description: 'Title of the board',
+        example: 'Let\'s start'
+    )]
+    private string $title;
+
+    public function __construct(string $title)
+    {
+        $this->title = $title;
+    }
 
     public function getTitle(): string
     {

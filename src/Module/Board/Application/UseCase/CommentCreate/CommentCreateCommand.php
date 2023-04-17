@@ -8,7 +8,8 @@ class CommentCreateCommand
 {
     public function __construct(
         private readonly string $taskId,
-        private readonly string $context
+        private readonly string $content,
+        private ?string $id = null
     ) {}
 
     public function getTaskId(): string
@@ -16,8 +17,18 @@ class CommentCreateCommand
         return $this->taskId;
     }
 
-    public function getContext(): string
+    public function getContent(): string
     {
-        return $this->context;
+        return $this->content;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
     }
 }

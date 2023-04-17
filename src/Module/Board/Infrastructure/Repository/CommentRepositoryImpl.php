@@ -31,4 +31,15 @@ class CommentRepositoryImpl extends ServiceEntityRepository implements CommentRe
             ->getQuery()
             ->getResult();
     }
+
+    public function getById(string $id): Comment
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('c')
+            ->from(Comment::class, 'c')
+            ->andWhere('c.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getSingleResult();
+    }
 }

@@ -10,12 +10,14 @@ RUN apt-get update && \
     docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
     docker-php-ext-install -j$(nproc) zip opcache intl pdo_pgsql pgsql && \
     docker-php-ext-enable apcu pdo_pgsql sodium && \
+    curl -fsSL https://deb.nodesource.com/setup_19.x | bash - &&\
+    apt-get install -y nodejs &&\
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-CMD composer i -o ; wait-for-it db:5432 -- bin/console doctrine:migrations:migrate ;  php-fpm
+CMD npm i ; npm run build ; composer i -o ; wait-for-it db:5432 -- bin/console doctrine:migrations:migrate ;  php-fpm
 
 EXPOSE 9000

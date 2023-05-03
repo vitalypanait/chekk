@@ -17,7 +17,7 @@ class Task
     public const STATE_CREATED = 'created';
     public const STATE_PROCESSING = 'processing';
     public const STATE_COMPLETED = 'completed';
-    public const STATE_CANCELLED = 'cancelled';
+    public const STATE_PAUSED = 'paused';
 
     private UuidInterface $id;
 
@@ -38,10 +38,6 @@ class Task
 
     public function update(string $title, string $state): void
     {
-        if ($this->state !== $state && $state === self::STATE_CREATED) {
-            throw new DomainException('State can not be mutate to created state');
-        }
-
         $this->title = $title;
         $this->state = $state;
     }

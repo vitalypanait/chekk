@@ -9,6 +9,7 @@ use App\Module\Board\Application\Http\API\V1\Model\Task;
 use App\Module\Board\Application\Http\API\V1\Request\TaskCreateRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdateRequest;
 use App\Module\Board\Application\UseCase\TaskCreate\TaskCreateCommand;
+use App\Module\Board\Application\UseCase\TaskDelete\TaskDeleteCommand;
 use App\Module\Board\Application\UseCase\TaskUpdate\TaskUpdateCommand;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
@@ -92,5 +93,25 @@ class TaskController extends AbstractController
         return $this->json(
             (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), []))->jsonSerialize()
         );
+    }
+
+    #[Route(
+        '/api/v1/task/{id}',
+        methods: ['DELETE']
+    )]
+    #[OA\Tag(name: 'Task')]
+    public function delete(string $id): Response
+    {
+        $task = $this->taskRepository->findById($id);
+
+        if ($task === null) {
+            return new Response('', 404);
+        }
+
+        $command = new TaskDeleteCommand($id);
+
+        $this->commandBus->execute($command);
+
+        return $this->json([]);
     }
 }

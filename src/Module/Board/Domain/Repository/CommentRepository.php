@@ -10,6 +10,8 @@ interface CommentRepository
 {
     public function save(Comment $comment): void;
 
+    public function delete(Comment $comment): void;
+
     /**
      * @param string[] $taskIds
      * @return Comment[]
@@ -17,4 +19,6 @@ interface CommentRepository
     public function findByTaskIds(array $taskIds): array;
 
     public function getById(string $id): Comment;
+
+    public function findById(string $id): ?Comment;
 }

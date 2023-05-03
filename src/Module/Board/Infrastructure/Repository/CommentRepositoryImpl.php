@@ -8,6 +8,7 @@ use App\Module\Board\Domain\Entity\Comment;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
 
 class CommentRepositoryImpl extends ServiceEntityRepository implements CommentRepository
 {
@@ -19,6 +20,11 @@ class CommentRepositoryImpl extends ServiceEntityRepository implements CommentRe
     public function save(Comment $comment): void
     {
         $this->getEntityManager()->persist($comment);
+    }
+
+    public function delete(Comment $comment): void
+    {
+        $this->getEntityManager()->remove($comment);
     }
 
     public function findByTaskIds(array $taskIds): array
@@ -41,5 +47,10 @@ class CommentRepositoryImpl extends ServiceEntityRepository implements CommentRe
             ->setParameter('id', $id)
             ->getQuery()
             ->getSingleResult();
+    }
+
+    public function findById(string $id): ?Comment
+    {
+        return Uuid::isValid($id) ? $this->findOneBy(['id' => $id]) : null;
     }
 }

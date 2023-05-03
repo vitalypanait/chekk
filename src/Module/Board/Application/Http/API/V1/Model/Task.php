@@ -55,7 +55,7 @@ class Task implements \JsonSerializable
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'state' => $this->state,
+            'status' => $this->state,
             'comments' => array_map(fn(Comment $comment) => $comment->jsonSerialize(), $this->comments)
         ];
     }

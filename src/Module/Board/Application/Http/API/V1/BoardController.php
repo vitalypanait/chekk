@@ -129,7 +129,7 @@ class BoardController extends AbstractController
             $tasks[$task->getId()->toString()] = [
                 'id' => $task->getId()->toString(),
                 'title' => $task->getTitle(),
-                'state' => $task->getState(),
+                'status' => $task->getState(),
                 'comments' => []
             ];
         }
@@ -145,8 +145,8 @@ class BoardController extends AbstractController
 
         return [
             'id' => $board->getId(),
-            'title' => $board->getTitle(),
-            'tasks' => $tasks
+            'title' => $board->getTitle() === null ? '' : $board->getTitle(),
+            'tasks' => array_values($tasks)
         ];
     }
 }

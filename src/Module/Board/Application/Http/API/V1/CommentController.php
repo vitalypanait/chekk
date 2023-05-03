@@ -7,6 +7,7 @@ namespace App\Module\Board\Application\Http\API\V1;
 use App\Module\Board\Application\Http\API\V1\Model\Comment;
 use App\Module\Board\Application\Http\API\V1\Request\CommentCreateRequest;
 use App\Module\Board\Application\UseCase\CommentCreate\CommentCreateCommand;
+use App\Module\Board\Application\UseCase\CommentDelete\CommentDeleteCommand;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Common\Bus\CommandBus;
@@ -50,5 +51,25 @@ class CommentController extends AbstractController
         $comment = $this->commentRepository->getById($command->getId());
 
         return $this->json((new Comment($comment->getId()->toString(), $comment->getContent()))->jsonSerialize());
+    }
+
+    #[Route(
+        '/api/v1/comment/{id}',
+        methods: ['DELETE']
+    )]
+    #[OA\Tag(name: 'Comment')]
+    public function delete(string $id): Response
+    {
+        $comment = $this->commentRepository->findById($id);
+
+        if ($comment === null) {
+            return new Response('', 404);
+        }
+
+        $command = new CommentDeleteCommand($id);
+
+        $this->commandBus->execute($command);
+
+        return $this->json([]);
     }
 }

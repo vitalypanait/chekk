@@ -34,6 +34,7 @@ class CommentRepositoryImpl extends ServiceEntityRepository implements CommentRe
             ->from(Comment::class, 'c')
             ->andWhere('IDENTITY(c.task) IN (:taskIds)')
             ->setParameter('taskIds', $taskIds)
+            ->orderBy('c.createdAt', 'desc')
             ->getQuery()
             ->getResult();
     }

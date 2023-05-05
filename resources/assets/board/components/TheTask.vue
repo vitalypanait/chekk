@@ -52,12 +52,14 @@
                             <v-icon icon="mdi-circle-medium" color="grey"></v-icon>
                         </template>
                         <v-textarea
-                            variant="underlined"
+                            v-model="comment"
+                            variant="solo"
+                            flat
                             auto-grow
-                            label="Leave a comment..."
+                            placeholder="Leave a comment..."
                             rows="1"
                             row-height="20"
-                            class="my-n5"
+                            class="my-n5 ml-n4"
                             @keydown.enter.exact.prevent="addComment"
                             @keydown.ctrl.enter.prevent="newLine"
                         ></v-textarea>

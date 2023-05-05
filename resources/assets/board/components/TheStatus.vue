@@ -1,6 +1,6 @@
 <template>
     <v-hover v-slot="{ isHovering, props }">
-        <v-icon :icon="selectedIcon" class="ml-4 me-4" :color="selectedColor" @click.stop="changeStatus" style="cursor: pointer"></v-icon>
+        <v-icon :icon="selectedIcon" :color="selectedColor" @click.stop="changeStatus" style="cursor: pointer"></v-icon>
     </v-hover>
 </template>
 

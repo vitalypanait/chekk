@@ -1,29 +1,28 @@
 <template>
     <v-layout>
         <v-main>
-            <v-container>
-                <v-sheet class="mx-auto" max-width="700px">
+            <v-container class="mx-auto" style="max-width: 700px">
                     <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
                     <v-text-field
-                        label="Type a task"
+                        placeholder="Type a task"
                         prepend-icon="mdi-plus-circle"
-                        variant="underlined"
-                        class="ml-4"
+                        variant="solo"
+                        flat
+                        class="ml-3"
                         v-model="task"
                         @keyup.enter="addTask"
                     ></v-text-field>
-                    <div v-for="(task, i) in board.tasks" :key="task.id">
-                        <the-task
-                            v-model="board.tasks[i]"
-                            @task:update="updateTask"
-                            @task:delete="deleteTask"
-                            @comment:add="addComment"
-                            @comment:delete="deleteComment"
-                        ></the-task>
+                    <div class="my-n5">
+                        <div v-for="(task, i) in board.tasks" :key="task.id">
+                            <the-card
+                                v-model="board.tasks[i]"
+                                @task:update="updateTask"
+                                @task:delete="deleteTask"
+                                @comment:add="addComment"
+                                @comment:delete="deleteComment"
+                            ></the-card>
+                        </div>
                     </div>
-                    <v-btn @click="checkBoard" class="mt-10" size="small">Проверить доску</v-btn>
-                    <div>{{ debug }}</div>
-                </v-sheet>
             </v-container>
         </v-main>
     </v-layout>
@@ -33,11 +32,12 @@
 
 import TheTask from './components/TheTask.vue';
 import TheTitle from './components/TheTitle.vue';
+import TheCard from './components/TheCard.vue';
 import axios from "axios";
 
 export default {
     name: "App",
-    components: {TheTask, TheTitle},
+    components: {TheTask, TheTitle, TheCard},
     data() {
         return {
             board: {id: '', title: '', tasks: []},
@@ -116,9 +116,6 @@ export default {
                         }
                     })
                 });
-        },
-        checkBoard() {
-            this.debug = JSON.stringify(this.board)
         },
     }
 };

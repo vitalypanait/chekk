@@ -1,13 +1,14 @@
 <template>
     <div
-        class="text-h3 mt-8 mb-12"
+        class="text-h3 mt-7 mb-12 ml-4"
         v-show="!isEditable"
         @click="makeEditable"
         style="cursor: pointer"
     >{{ modelValue }}</div>
     <v-text-field
         autofocus
-        variant="underlined"
+        variant="solo"
+        flat
         v-show="isEditable"
         :value="modelValue"
         @input="changeTitle"

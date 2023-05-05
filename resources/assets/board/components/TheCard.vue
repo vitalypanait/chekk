@@ -1,5 +1,5 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg elevation-5">
+    <v-card class="my-2 py-3 rounded-lg elevation-5" style="cursor: pointer">
         <v-sheet class="d-flex align-center" @click="toggleCollapse">
             <div class="ml-3">
                 <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
@@ -51,9 +51,9 @@
                 class="mx-10 mt-2 mb-n6"
             ></v-textarea>
             <v-divider v-if="modelValue.comments.length > 0"></v-divider>
-            <v-sheet class="d-flex align-center ml-14 mt-4 mr-3" v-for="comment in modelValue.comments">
-                <div class="me-auto">{{ comment.content }}</div>
-                <v-icon icon="mdi-delete" size="small" color="grey-lighten-1" @click="deleteComment(comment.id)"></v-icon>
+            <v-sheet class="d-flex align-center ml-14 mt-2 mr-3" v-for="comment in modelValue.comments">
+                <div class="me-auto text-body-2">{{ comment.content }}</div>
+                <v-icon icon="mdi-delete" size="x-small" color="grey-lighten-1" @click="deleteComment(comment.id)"></v-icon>
             </v-sheet>
         </v-sheet>
     </v-card>

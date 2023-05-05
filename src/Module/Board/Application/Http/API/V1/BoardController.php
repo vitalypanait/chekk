@@ -12,6 +12,7 @@ use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardTitleUpdateComman
 use App\Module\Board\Domain\Entity\Board;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
+use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Common\Bus\CommandBus;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -23,10 +24,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class BoardController extends AbstractController
 {
     public function __construct(
-        private readonly BoardRepository $boardRepository,
-        private readonly TaskRepository $taskRepository,
-        private readonly CommentRepository $commentRepository,
-        private readonly CommandBus $commandBus
+        private readonly BoardRepository     $boardRepository,
+        private readonly TaskRepository      $taskRepository,
+        private readonly CommentRepository   $commentRepository,
+        private readonly TaskLabelRepository $taskLabelRepository,
+        private readonly CommandBus          $commandBus
     ) {}
 
     /**
@@ -123,6 +125,16 @@ class BoardController extends AbstractController
         $tasks = [];
         $taskIds = [];
 
+        foreach ($this->taskLabelRepository->findByBoard($board) as $taskLabel) {
+            $labels[$taskLabel->getTask()->getId()->toString()][] = [
+                'id' => $taskLabel->getId()->toString(),
+                'label' => [
+                    'id' => $taskLabel->getLabel()->getId()->toString(),
+                    'title' => $taskLabel->getLabel()->getTitle(),
+                ]
+            ];
+        }
+
         foreach ($this->taskRepository->findByBoard($board) as $task) {
             $taskIds[] = $task->getId()->toString();
 
@@ -130,6 +142,7 @@ class BoardController extends AbstractController
                 'id' => $task->getId()->toString(),
                 'title' => $task->getTitle(),
                 'status' => $task->getState(),
+                'labels' => $labels[$task->getId()->toString()] ?? [],
                 'comments' => []
             ];
         }

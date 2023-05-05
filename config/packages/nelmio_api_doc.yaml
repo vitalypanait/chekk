@@ -3,7 +3,7 @@ nelmio_api_doc:
         info:
             title: Chekk
             description: API для взаимодействия с приложением
-            version: 1.0.0
+            version: 1.1.0
     areas:
         path_patterns:
             - ^/api(?!/doc(?:\.json)?$)

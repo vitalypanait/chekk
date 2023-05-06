@@ -1,5 +1,5 @@
 <template>
-    <v-app class="bg-grey-lighten-5" full-height>
+    <v-app class="bg-grey-lighten-4" full-height>
         <v-main>
             <v-container class="mx-auto">
                 <v-row>
@@ -29,7 +29,7 @@
                 </v-row>
             </v-container>
         </v-main>
-        <v-bottom-navigation bg-color="grey-lighten-5" border="false" density="compact" elevation="0">
+        <v-bottom-navigation bg-color="grey-lighten-4" border="false" density="compact" elevation="0">
             <v-menu location="top" class="rounded-xl">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
@@ -200,7 +200,7 @@ export default {
 </script>
 <style>
     .the-title {
-        background: #fafafa;
+        background: #f5f5f5;
         outline: none;
     }
 </style>

@@ -49,7 +49,7 @@ export default {
 <style>
     .task-title {
         font-size: 3rem !important;
-        background: #fafafa;
+        background: #f5f5f5;
         outline: none;
     }
 </style>

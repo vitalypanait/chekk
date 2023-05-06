@@ -5,10 +5,7 @@
 </template>
 
 <script>
-const STATUS_CREATED = 'created';
-const STATUS_COMPLETED = 'completed';
-const STATUS_PAUSED = 'paused';
-const STATUS_PROCESSING = 'processing';
+import { getStatusColor, getStatusIcon, getNextStatus } from '../utils';
 
 export default {
     name: 'TheStatus',
@@ -16,45 +13,15 @@ export default {
     emits: ['update:modelValue'],
     computed: {
         selectedIcon() {
-            switch (this.modelValue) {
-                case STATUS_CREATED:
-                    return 'mdi-circle-outline'
-                case STATUS_COMPLETED:
-                    return 'mdi-checkbox-marked-circle';
-                case STATUS_PAUSED:
-                    return 'mdi-stop-circle'
-                case STATUS_PROCESSING:
-                    return 'mdi-clock-time-four'
-            }
+            return getStatusIcon(this.modelValue);
         },
         selectedColor() {
-            switch (this.modelValue) {
-                case STATUS_COMPLETED:
-                    return 'green';
-                case STATUS_CREATED:
-                    return 'grey'
-                case STATUS_PAUSED:
-                    return 'red'
-                case STATUS_PROCESSING:
-                    return 'blue'
-            }
+            return getStatusColor(this.modelValue);
         }
     },
     methods: {
         changeStatus() {
-            let value = STATUS_PAUSED;
-
-            if (this.modelValue === STATUS_CREATED) {
-                value = STATUS_PROCESSING
-            } else if (this.modelValue === STATUS_PROCESSING) {
-                value = STATUS_PAUSED
-            } else if (this.modelValue === STATUS_PAUSED) {
-                value = STATUS_COMPLETED
-            } else if (this.modelValue === STATUS_COMPLETED) {
-                value = STATUS_CREATED
-            }
-
-            this.$emit('update:modelValue', value);
+            this.$emit('update:modelValue', getNextStatus(this.modelValue));
         }
     }
 };

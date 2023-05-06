@@ -5,16 +5,13 @@
                 <v-row>
                     <v-col class="offset-sm-0 v-col-md-8 offset-md-2 v-col-lg-8 offset-lg-2">
                         <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
-                        <v-text-field
-                          placeholder="Type a task"
-                          prepend-icon="mdi-plus-circle"
-                          variant="solo"
-                          flat
-                          class="ml-3 the-title"
-                          v-model="task"
-                          @keyup.enter="addTask"
-                        ></v-text-field>
-                        <div class="my-n5">
+                        <div class="d-flex align-center">
+                            <div>
+                                <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
+                            </div>
+                            <input placeholder="Type a task" class="the-title" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
+                        </div>
+                        <div class="my-5">
                             <div v-for="(task, i) in board.tasks" :key="task.id">
                                 <the-card
                                   v-model="board.tasks[i]"
@@ -32,6 +29,30 @@
                 </v-row>
             </v-container>
         </v-main>
+        <v-bottom-navigation bg-color="grey-lighten-5" border="false" density="compact" elevation="0">
+            <v-menu location="top" class="rounded-xl">
+                <template v-slot:activator="{ props }">
+                    <v-btn value="statuses" v-bind="props">Statuses</v-btn>
+                </template>
+
+                <v-list class="rounded-xl">
+                    <v-list-item
+                        v-for="(status, i) in allStatuses"
+                        :key="i"
+                        :value="status.value"
+                    >
+                        <v-sheet class="d-flex">
+                            <v-icon :color="status.color" :icon="status.icon" class="mr-1"></v-icon>
+                            <span>{{ getStatusCount(status.value) }}</span>
+                        </v-sheet>
+                    </v-list-item>
+                    <v-list-item value="Reset">Reset</v-list-item>
+                </v-list>
+            </v-menu>
+
+            <v-btn value="labels" class="me-auto">Labels</v-btn>
+            <v-btn value="access">Access</v-btn>
+        </v-bottom-navigation>
     </v-app>
 </template>
 
@@ -40,6 +61,7 @@
 import TheTitle from './components/TheTitle.vue';
 import TheCard from './components/TheCard.vue';
 import axios from "axios";
+import { getStatuses } from './utils';
 
 export default {
     name: "App",
@@ -66,6 +88,24 @@ export default {
             .then(response => {
                 this.labels = response.data
             });
+    },
+    computed: {
+        allStatuses() {
+            return getStatuses();
+        },
+        statusesCount() {
+            let statusesCount = [];
+
+            this.allStatuses.forEach(status => {
+                statusesCount[status.value] = 0;
+            })
+
+            this.board.tasks.forEach(currentTask => {
+                statusesCount[currentTask.status] += 1;
+            })
+
+            return statusesCount
+        }
     },
     methods: {
         updateTitle(title) {
@@ -152,11 +192,15 @@ export default {
                     })
                 });
         },
+        getStatusCount(status) {
+            return this.statusesCount[status]
+        }
     }
 };
 </script>
 <style>
-.the-title .v-field--active input, .the-title .v-field input {
-    background: #fafafa;
-}
+    .the-title {
+        background: #fafafa;
+        outline: none;
+    }
 </style>

@@ -25,15 +25,15 @@ class Task implements \JsonSerializable
     /**
      * @var TaskLabel[]
      */
-    private array $taskLabels;
+    private array $labels;
 
-    public function __construct(string $id, string $title, string $state, array $comments, array $taskLabes)
+    public function __construct(string $id, string $title, string $state, array $comments, array $labels)
     {
         $this->id = $id;
         $this->title = $title;
         $this->state = $state;
         $this->comments = $comments;
-        $this->taskLabels = $taskLabes;
+        $this->labels = $labels;
     }
 
     public function getId(): string
@@ -63,7 +63,7 @@ class Task implements \JsonSerializable
             'title' => $this->title,
             'status' => $this->state,
             'comments' => array_map(fn(Comment $comment) => $comment->jsonSerialize(), $this->comments),
-            'taskLabels' => array_map(fn(TaskLabel $label) => $label->jsonSerialize(), $this->taskLabels)
+            'labels' => array_map(fn(TaskLabel $label) => $label->jsonSerialize(), $this->labels)
         ];
     }
 }

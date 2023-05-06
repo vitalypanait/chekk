@@ -1,6 +1,6 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg" style="cursor: pointer">
-        <v-sheet class="d-flex align-center" @click="toggleCollapse">
+    <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer">
+        <v-sheet class="d-flex align-start" @click="toggleCollapse">
             <div class="ml-3">
                 <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
             </div>
@@ -22,16 +22,16 @@
 
                 <v-list>
                     <v-list-item value="collapse">
-                        <v-list-item-title @click="toggleCollapse">Развернуть</v-list-item-title>
+                        <v-list-item-title @click="toggleCollapse">Collapse</v-list-item-title>
                     </v-list-item>
                     <v-list-item value="edit">
-                        <v-list-item-title @click="makeEditable">Редактировать</v-list-item-title>
+                        <v-list-item-title @click="makeEditable">Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item value="delete">
-                        <v-list-item-title @click="deleteTask">Удалить</v-list-item-title>
+                        <v-list-item-title @click="deleteTask">Delete</v-list-item-title>
                     </v-list-item>
-                    <v-divider></v-divider>
-                    <v-list-item>
+                    <v-divider v-show=labels.length > 0"></v-divider>
+                    <v-list-item v-show="labels.length > 0">
                         <div class="my-2">Labels</div>
                         <v-chip
                             v-for="label in labels"
@@ -41,7 +41,7 @@
                             size="x-small"
                             :color="label.color"
                             text-color="white"
-                            @click.stop="addLabel(label)"
+                            @click.stop="mutateLabel(label)"
                         >{{ label.title }}</v-chip>
                     </v-list-item>
                 </v-list>
@@ -85,6 +85,7 @@
 
 import TheStatus from './TheStatus.vue';
 import TheTaskTitle from './TheTaskTitle.vue';
+
 export default {
     name: 'TheTask',
     components: {TheStatus, TheTaskTitle},
@@ -138,20 +139,22 @@ export default {
                 taskId: this.modelValue.id
             })
         },
-        addLabel(label) {
-            let hasLabel = false;
+        mutateLabel(label) {
+            let labelToDelete = null;
 
             this.modelValue.labels.forEach(taskLabel => {
-                if (taskLabel.title === label.title) {
-                    hasLabel = true;
+                if (taskLabel.label.id === label.id) {
+                    labelToDelete = taskLabel;
                 }
             });
 
-            if (!hasLabel) {
+            if (labelToDelete === null) {
                 this.$emit('label:add', {
                     id: label.id,
                     taskId: this.modelValue.id
                 })
+            } else {
+                this.deleteLabel(labelToDelete)
             }
         },
         deleteLabel(label) {

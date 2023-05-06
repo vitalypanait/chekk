@@ -1,24 +1,22 @@
 <template>
     <div
-        class="text-h3 mt-7 mb-12 ml-4"
+        class="task-title mt-7 mb-12 ml-1"
         v-show="!isEditable"
         @click="makeEditable"
         style="cursor: pointer"
     >{{ modelValue }}</div>
-    <v-text-field
-        autofocus
-        variant="solo"
-        flat
-        v-show="isEditable"
-        :value="modelValue"
-        @input="changeTitle"
-        @keyup.enter="update"
-        class="mb-3 task-title"
-        placeholder="Type a title"
-    ></v-text-field>
+    <input placeholder="Type a task"
+       class="task-title mt-7 mb-12 ml-1"
+       v-show="isEditable"
+       :value="modelValue"
+       @input="changeTitle"
+       @keyup.enter="update"
+       @blur="update"
+    />
 </template>
 
 <script>
+
 export default {
     name: 'TheTitle',
     data() {
@@ -49,8 +47,9 @@ export default {
 };
 </script>
 <style>
-    .task-title .v-field--active input, .task-title .v-field input {
+    .task-title {
         font-size: 3rem !important;
         background: #fafafa;
+        outline: none;
     }
 </style>

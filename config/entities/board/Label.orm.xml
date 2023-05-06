@@ -6,6 +6,7 @@
     <entity name="App\Module\Board\Domain\Entity\Label" table="labels">
         <id name="id" type="uuid" column="id" />
         <field name="title"/>
+        <field name="color" length="15"/>
         <many-to-one field="board" target-entity="App\Module\Board\Domain\Entity\Board">
             <join-column name="board_id" nullable="false"/>
         </many-to-one>

@@ -58,7 +58,8 @@ class TaskLabelController extends AbstractController
                     $task->getId()->toString(),
                     new Label(
                         $label->getId()->toString(),
-                        $label->getTitle()
+                        $label->getTitle(),
+                        $label->getColor()
                     )
                 )
             )->jsonSerialize()

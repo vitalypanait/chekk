@@ -46,10 +46,12 @@ export default {
 
             if (this.modelValue === STATUS_CREATED) {
                 value = STATUS_PROCESSING
-            } else if (this.modelValue === STATUS_PAUSED) {
-                value = STATUS_PROCESSING
             } else if (this.modelValue === STATUS_PROCESSING) {
+                value = STATUS_PAUSED
+            } else if (this.modelValue === STATUS_PAUSED) {
                 value = STATUS_COMPLETED
+            } else if (this.modelValue === STATUS_COMPLETED) {
+                value = STATUS_CREATED
             }
 
             this.$emit('update:modelValue', value);

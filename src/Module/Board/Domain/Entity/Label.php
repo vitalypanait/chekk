@@ -17,7 +17,8 @@ class Label
 
     public function __construct(
         private readonly Board $board,
-        private readonly string $title
+        private readonly string $title,
+        private readonly string $color
     ) {
         $this->id = Uuid::uuid4();
         $this->createdAt = new DateTime();
@@ -37,5 +38,10 @@ class Label
     public function getBoard(): Board
     {
         return $this->board;
+    }
+
+    public function getColor(): string
+    {
+        return $this->color;
     }
 }

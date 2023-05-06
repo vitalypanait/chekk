@@ -9,6 +9,7 @@ class LabelCreateCommand
     public function __construct(
         private readonly string $boardId,
         private readonly string $title,
+        private readonly string $color,
         private ?string $id = null
     ) {}
 
@@ -20,6 +21,11 @@ class LabelCreateCommand
     public function getTitle(): string
     {
         return $this->title;
+    }
+
+    public function getColor(): string
+    {
+        return $this->color;
     }
 
     public function getId(): ?string

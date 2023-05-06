@@ -13,7 +13,7 @@
         :value="modelValue"
         @input="changeTitle"
         @keyup.enter="update"
-        class="mb-3 title-font-size"
+        class="mb-3 task-title"
         placeholder="Type a title"
     ></v-text-field>
 </template>
@@ -49,7 +49,8 @@ export default {
 };
 </script>
 <style>
-    .title-font-size .v-field--active input, .title-font-size .v-field input {
+    .task-title .v-field--active input, .task-title .v-field input {
         font-size: 3rem !important;
+        background: #fafafa;
     }
 </style>

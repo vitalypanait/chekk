@@ -8,6 +8,7 @@ use App\Module\Board\Application\Http\API\V1\Model\Label;
 use App\Module\Board\Application\Http\API\V1\Request\LabelCreateRequest;
 use App\Module\Board\Application\UseCase\LabelCreate\LabelCreateCommand;
 use App\Module\Board\Application\UseCase\LabelDelete\LabelDeleteCommand;
+use App\Module\Board\Domain\Entity\Label as LabelEntity;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\LabelRepository;
 use App\Module\Common\Bus\CommandBus;
@@ -44,14 +45,14 @@ class LabelController extends AbstractController
             return new Response('', 404);
         }
 
-        $command = new LabelCreateCommand($request->getBoardId(), $request->getTitle());
+        $command = new LabelCreateCommand($request->getBoardId(), $request->getTitle(), $request->getColor());
 
         $this->commandBus->execute($command);
 
         $label = $this->labelRepository->getById($command->getId());
 
         return $this->json(
-            (new Label($label->getId()->toString(), $label->getTitle()))->jsonSerialize()
+            (new Label($label->getId()->toString(), $label->getTitle(), $label->getColor()))->jsonSerialize()
         );
     }
 
@@ -65,5 +66,34 @@ class LabelController extends AbstractController
         $this->commandBus->execute(new LabelDeleteCommand($id));
 
         return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/label/byBoard/{id}',
+        methods: ['GET']
+    )]
+    #[OA\Tag(name: 'Label')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns labels by board',
+    )]
+    public function findByBoard(string $id): Response
+    {
+        $board = $this->boardRepository->findById($id);
+
+        if ($board === null) {
+            return new Response('', 404);
+        }
+
+        return $this->json(
+            array_map(
+                fn(LabelEntity $label) => new Label(
+                    $label->getId()->toString(),
+                    $label->getTitle(),
+                    $label->getColor()
+                ),
+                $this->labelRepository->findByBoard($board)
+            )
+        );
     }
 }

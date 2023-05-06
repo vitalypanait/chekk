@@ -1,5 +1,5 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg elevation-5" style="cursor: pointer">
+    <v-card class="my-2 py-3 rounded-lg" style="cursor: pointer">
         <v-sheet class="d-flex align-center" @click="toggleCollapse">
             <div class="ml-3">
                 <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
@@ -15,7 +15,7 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu>
+            <v-menu open-on-hover @click.stop="false">
                 <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2"></v-icon>
                 </template>
@@ -30,13 +30,35 @@
                     <v-list-item value="delete">
                         <v-list-item-title @click="deleteTask">Удалить</v-list-item-title>
                     </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                        <div class="my-2">Labels</div>
+                        <v-chip
+                            v-for="label in labels"
+                            variant="outlined"
+                            label
+                            class="font-weight-black mr-2"
+                            size="x-small"
+                            :color="label.color"
+                            text-color="white"
+                            @click.stop="addLabel(label)"
+                        >{{ label.title }}</v-chip>
+                    </v-list-item>
                 </v-list>
             </v-menu>
         </v-sheet>
-        <v-sheet class="mt-1 ml-13" v-if="false">
+        <v-sheet class="mt-1 ml-13" v-if="modelValue.labels.length > 0">
             <div>
-                <v-chip variant="outlined" label class="font-weight-black mx-1" size="x-small" color="red" text-color="white">Test</v-chip>
-                <v-chip variant="outlined" label class="font-weight-black mx-1" size="x-small" color="green" text-color="white">Back</v-chip>
+                <v-chip
+                    v-for="label in modelValue.labels"
+                    variant="outlined"
+                    label
+                    class="font-weight-black mx-1"
+                    size="x-small"
+                    :color="label.label.color"
+                    text-color="white"
+                    @click.stop="deleteLabel(label)"
+                >{{ label.label.title }}</v-chip>
             </div>
         </v-sheet>
         <v-sheet v-show="collapse">
@@ -73,8 +95,16 @@ export default {
             comment: ''
         }
     },
-    props: ['modelValue'],
-    emits: ['update:modelValue', 'task:update', 'task:delete', 'comment:add', 'comment:delete'],
+    props: ['modelValue', 'labels'],
+    emits: [
+        'update:modelValue',
+        'task:update',
+        'task:delete',
+        'comment:add',
+        'comment:delete',
+        'label:add',
+        'label:delete'
+    ],
     methods: {
         toggleCollapse() {
             this.collapse = !this.collapse;
@@ -107,6 +137,25 @@ export default {
                 id: id,
                 taskId: this.modelValue.id
             })
+        },
+        addLabel(label) {
+            let hasLabel = false;
+
+            this.modelValue.labels.forEach(taskLabel => {
+                if (taskLabel.title === label.title) {
+                    hasLabel = true;
+                }
+            });
+
+            if (!hasLabel) {
+                this.$emit('label:add', {
+                    id: label.id,
+                    taskId: this.modelValue.id
+                })
+            }
+        },
+        deleteLabel(label) {
+            this.$emit('label:delete', label)
         }
     }
 };

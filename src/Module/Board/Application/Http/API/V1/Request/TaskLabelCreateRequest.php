@@ -12,7 +12,7 @@ class TaskLabelCreateRequest implements IdentifierInterface
     #[OA\Property(description: 'Task ID', example: '839cf68e-4062-4259-addc-09ce5644ee52')]
     private string $taskId;
 
-    #[OA\Property(description: 'label ID', example: '839cf68e-4062-4259-addc-09ce5644ee52')]
+    #[OA\Property(description: 'Label ID', example: '839cf68e-4062-4259-addc-09ce5644ee52')]
     private string $labelId;
 
     public function __construct(string $taskId, string $labelId)

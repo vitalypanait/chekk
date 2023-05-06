@@ -20,7 +20,7 @@ class LabelCreateHandler implements CommandHandler
     {
         $board = $this->boardRepository->getById($command->getBoardId());
 
-        $label = new Label($board, $command->getTitle());
+        $label = new Label($board, $command->getTitle(), $command->getColor());
 
         $this->labelRepository->save($label);
 

@@ -1,46 +1,53 @@
 <template>
-    <v-layout>
+    <v-app class="bg-grey-lighten-5" full-height>
         <v-main>
-            <v-container class="mx-auto" style="max-width: 700px">
-                    <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
-                    <v-text-field
-                        placeholder="Type a task"
-                        prepend-icon="mdi-plus-circle"
-                        variant="solo"
-                        flat
-                        class="ml-3"
-                        v-model="task"
-                        @keyup.enter="addTask"
-                    ></v-text-field>
-                    <div class="my-n5">
-                        <div v-for="(task, i) in board.tasks" :key="task.id">
-                            <the-card
-                                v-model="board.tasks[i]"
-                                @task:update="updateTask"
-                                @task:delete="deleteTask"
-                                @comment:add="addComment"
-                                @comment:delete="deleteComment"
-                            ></the-card>
+            <v-container class="mx-auto">
+                <v-row>
+                    <v-col class="offset-sm-0 v-col-md-8 offset-md-2 v-col-lg-8 offset-lg-2">
+                        <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
+                        <v-text-field
+                          placeholder="Type a task"
+                          prepend-icon="mdi-plus-circle"
+                          variant="solo"
+                          flat
+                          class="ml-3 the-title"
+                          v-model="task"
+                          @keyup.enter="addTask"
+                        ></v-text-field>
+                        <div class="my-n5">
+                            <div v-for="(task, i) in board.tasks" :key="task.id">
+                                <the-card
+                                  v-model="board.tasks[i]"
+                                  :labels="labels"
+                                  @task:update="updateTask"
+                                  @task:delete="deleteTask"
+                                  @comment:add="addComment"
+                                  @comment:delete="deleteComment"
+                                  @label:add="setLabel"
+                                  @label:delete="deleteLabel"
+                                ></the-card>
+                            </div>
                         </div>
-                    </div>
+                    </v-col>
+                </v-row>
             </v-container>
         </v-main>
-    </v-layout>
+    </v-app>
 </template>
 
 <script>
 
-import TheTask from './components/TheTask.vue';
 import TheTitle from './components/TheTitle.vue';
 import TheCard from './components/TheCard.vue';
 import axios from "axios";
 
 export default {
     name: "App",
-    components: {TheTask, TheTitle, TheCard},
+    components: {TheTitle, TheCard},
     data() {
         return {
             board: {id: '', title: '', tasks: []},
+            labels: [],
             debug: '',
             task: '',
         };
@@ -52,6 +59,12 @@ export default {
                 this.board.id = response.data.id;
                 this.board.title = response.data.title;
                 this.board.tasks = response.data.tasks
+            });
+
+        axios
+            .get('/api/v1/label/byBoard/' + window.location.pathname.substring(1))
+            .then(response => {
+                this.labels = response.data
             });
     },
     methods: {
@@ -117,6 +130,33 @@ export default {
                     })
                 });
         },
+        setLabel(label) {
+            axios
+                .post('/api/v1/task-label/', {taskId: label.taskId, labelId: label.id})
+                .then(response => {
+                    this.board.tasks.forEach(currentTask => {
+                        if (currentTask.id === label.taskId) {
+                            currentTask.labels.unshift(response.data)
+                        }
+                    })
+                });
+        },
+        deleteLabel(label) {
+            axios
+                .delete('/api/v1/task-label/' + label.id)
+                .then(response => {
+                    this.board.tasks.forEach(currentTask => {
+                        if (currentTask.id === label.taskId) {
+                            currentTask.labels = currentTask.labels.filter((item) => item.id !== label.id)
+                        }
+                    })
+                });
+        },
     }
 };
 </script>
+<style>
+.the-title .v-field--active input, .the-title .v-field input {
+    background: #fafafa;
+}
+</style>

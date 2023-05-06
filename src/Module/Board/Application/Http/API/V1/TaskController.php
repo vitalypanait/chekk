@@ -54,7 +54,7 @@ class TaskController extends AbstractController
         $task = $this->taskRepository->getById($command->getId());
 
         return $this->json(
-            (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), []))->jsonSerialize()
+            (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), [], []))->jsonSerialize()
         );
     }
 
@@ -91,7 +91,7 @@ class TaskController extends AbstractController
         $task = $this->taskRepository->getById($task->getId()->toString());
 
         return $this->json(
-            (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), []))->jsonSerialize()
+            (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), [], []))->jsonSerialize()
         );
     }
 

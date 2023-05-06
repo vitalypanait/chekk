@@ -126,11 +126,15 @@ class BoardController extends AbstractController
         $taskIds = [];
 
         foreach ($this->taskLabelRepository->findByBoard($board) as $taskLabel) {
+            $label = $taskLabel->getLabel();
+
             $labels[$taskLabel->getTask()->getId()->toString()][] = [
                 'id' => $taskLabel->getId()->toString(),
+                'taskId' => $taskLabel->getTask()->getId()->toString(),
                 'label' => [
-                    'id' => $taskLabel->getLabel()->getId()->toString(),
-                    'title' => $taskLabel->getLabel()->getTitle(),
+                    'id' => $label->getId()->toString(),
+                    'title' => $label->getTitle(),
+                    'color' => $label->getColor(),
                 ]
             ];
         }

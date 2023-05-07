@@ -12,45 +12,68 @@
                             <input placeholder="Type a task" class="the-add-task" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
                         </div>
                         <div class="my-5">
-                            <div v-for="(task, i) in board.tasks" :key="task.id">
-                                <the-card
-                                  v-model="board.tasks[i]"
-                                  :labels="labels"
-                                  @task:update="updateTask"
-                                  @task:delete="deleteTask"
-                                  @comment:add="addComment"
-                                  @comment:delete="deleteComment"
-                                  @label:add="setLabel"
-                                  @label:delete="deleteLabel"
-                                ></the-card>
-                            </div>
+                            <the-card
+                                v-for="(task, i) in filteredTasks"
+                                v-model="filteredTasks[i]"
+                                :key="task.id"
+                                :labels="labels"
+                                @task:update="updateTask"
+                                @task:delete="deleteTask"
+                                @comment:add="addComment"
+                                @comment:delete="deleteComment"
+                                @label:add="setLabel"
+                                @label:delete="deleteLabel"
+                            ></the-card>
                         </div>
                     </v-col>
                 </v-row>
             </v-container>
         </v-main>
         <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
-            <v-menu location="top" class="rounded-xl">
+            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
                 </template>
 
-                <v-list class="rounded-xl">
+                <v-list class="rounded-xl" density="compact">
                     <v-list-item
                         v-for="(status, i) in allStatuses"
                         :key="i"
                         :value="status.value"
+                        @click="updateStatusFilter(status.value)"
                     >
-                        <v-sheet class="d-flex">
-                            <v-icon :color="status.color" :icon="status.icon" class="mr-1"></v-icon>
+                        <v-sheet class="d-flex rounded-lg pa-1" :class="getFilterBackground(status)">
+                            <v-icon :color="getFilterColor(status)" :icon="status.icon" class="mr-1"></v-icon>
                             <span>{{ getStatusCount(status.value) }}</span>
                         </v-sheet>
                     </v-list-item>
-                    <v-list-item value="Reset">Reset</v-list-item>
+                    <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
+            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false">
+                <template v-slot:activator="{ props }">
+                    <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
+                </template>
 
-            <v-btn value="labels" class="me-auto">Labels</v-btn>
+                <v-list class="rounded-xl" density="compact">
+                    <v-list-item
+                        v-for="(label, i) in labels"
+                        :key="i"
+                        :value="label.title"
+                        @click="updateLabelFilter(label)"
+                    >
+                        <v-chip
+                            label
+                            class="font-weight-black mx-1"
+                            size="x-small"
+                            :color="label.color"
+                            :value="label.id"
+                            :text-color="getLabelTextColor(label)"
+                        >{{ label.title }}</v-chip>
+                    </v-list-item>
+                    <v-list-item value="Reset" @click="resetLabelFilter()">Reset</v-list-item>
+                </v-list>
+            </v-menu>
             <v-btn value="access">Access</v-btn>
         </v-bottom-navigation>
     </v-app>
@@ -72,6 +95,8 @@ export default {
             labels: [],
             debug: '',
             task: '',
+            filteredStatuses: [],
+            filteredLabels: [],
         };
     },
     mounted() {
@@ -105,6 +130,19 @@ export default {
             })
 
             return statusesCount
+        },
+        filteredTasks() {
+            let filtered = this.board.tasks
+
+            if (this.filteredStatuses.length > 0) {
+                filtered = filtered.filter((task) => this.filteredStatuses.includes(task.status))
+            }
+
+            if (this.filteredLabels.length > 0) {
+                filtered = filtered.filter((task) => task.labels.filter((label) => this.filteredStatuses.includes(label.label.id)))
+            }
+
+            return filtered
         }
     },
     methods: {
@@ -194,7 +232,61 @@ export default {
         },
         getStatusCount(status) {
             return this.statusesCount[status]
-        }
+        },
+        updateLabelFilter(label) {
+            if (this.filteredLabels.includes(label.id)) {
+                const index = this.filteredLabels.indexOf(label.id);
+                if (index > -1) {
+                    this.filteredLabels.splice(index, 1);
+                }
+            } else {
+                this.filteredLabels.push(label.id)
+            }
+        },
+        resetLabelFilter() {
+            this.filteredLabels = [];
+        },
+        getLabelVariant(label) {
+            if (this.filteredLabels.includes(label.id)) {
+                return 'default'
+            }
+
+            return 'outlined'
+        },
+        getLabelTextColor(label) {
+            if (this.filteredLabels.includes(label.id)) {
+                return ''
+            }
+
+            return 'white'
+        },
+        updateStatusFilter(status) {
+            if (this.filteredStatuses.includes(status)) {
+                const index = this.filteredStatuses.indexOf(status);
+                if (index > -1) {
+                    this.filteredStatuses.splice(index, 1);
+                }
+            } else {
+                this.filteredStatuses.push(status)
+            }
+        },
+        resetStatusFilter() {
+            this.filteredStatuses = [];
+        },
+        getFilterBackground(status) {
+            if (this.filteredStatuses.includes(status.value)) {
+                return 'bg-' + status.color
+            }
+
+            return ''
+        },
+        getFilterColor(status) {
+            if (this.filteredStatuses.includes(status.value)) {
+                return ''
+            }
+
+            return status.color
+        },
     }
 };
 </script>

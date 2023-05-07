@@ -15,12 +15,12 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu open-on-hover>
+            <v-menu open-on-hover open-delay="50">
                 <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2" @click.stop="false"></v-icon>
                 </template>
 
-                <v-list>
+                <v-list class="rounded-xl">
                     <v-list-item value="collapse">
                         <v-list-item-title @click="toggleCollapse">Collapse</v-list-item-title>
                     </v-list-item>

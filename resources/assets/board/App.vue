@@ -30,7 +30,7 @@
             </v-container>
         </v-main>
         <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
-            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false">
+            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
                 </template>
@@ -50,7 +50,7 @@
                     <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
-            <v-menu location="top" class="rounded-lg" open-on-hover :close-on-content-click="false">
+            <v-menu location="top" class="rounded-lg" open-on-hover :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
                 </template>

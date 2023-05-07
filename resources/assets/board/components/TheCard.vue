@@ -15,7 +15,7 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu open-on-hover open-delay="50">
+            <v-menu open-on-hover open-delay="50" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2" @click.stop="false"></v-icon>
                 </template>

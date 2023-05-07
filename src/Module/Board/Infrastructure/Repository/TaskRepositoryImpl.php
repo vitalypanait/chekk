@@ -7,6 +7,7 @@ namespace App\Module\Board\Infrastructure\Repository;
 use App\Module\Board\Domain\Entity\Board;
 use App\Module\Board\Domain\Entity\Task;
 use App\Module\Board\Domain\Repository\CommentRepository;
+use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -15,12 +16,17 @@ use Ramsey\Uuid\Uuid;
 class TaskRepositoryImpl extends ServiceEntityRepository implements TaskRepository
 {
     private CommentRepository $commentRepository;
+    private TaskLabelRepository $taskLabelRepository;
 
-    public function __construct(ManagerRegistry $registry, CommentRepository $commentRepository)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        CommentRepository $commentRepository,
+        TaskLabelRepository $taskLabelRepository
+    ) {
         parent::__construct($registry, Task::class);
 
         $this->commentRepository = $commentRepository;
+        $this->taskLabelRepository = $taskLabelRepository;
     }
 
     public function save(Task $task): void
@@ -32,6 +38,10 @@ class TaskRepositoryImpl extends ServiceEntityRepository implements TaskReposito
     {
         foreach ($this->commentRepository->findByTaskIds([$task->getId()]) as $comment) {
             $this->commentRepository->delete($comment);
+        }
+
+        foreach ($this->taskLabelRepository->findByTask($task) as $taskLabel) {
+            $this->taskLabelRepository->delete($taskLabel);
         }
 
         $this->getEntityManager()->remove($task);

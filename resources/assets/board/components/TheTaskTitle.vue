@@ -1,14 +1,14 @@
 <template>
     <div v-show="!isEditable" class="me-auto ml-5 pr-3">{{ title }}</div>
-    <v-text-field
-        variant="underlined"
-        v-show="isEditable"
-        :value="title"
-        class="me-auto ml-5 pr-3"
-        @input="$emit('update:title', $event.target.value)"
-        @click.stop=""
-        @keyup.enter="update"
-    ></v-text-field>
+    <input placeholder="Add a task"
+           class="the-task-title ml-5"
+           v-show="isEditable"
+           :value="title"
+           @input="$emit('update:title', $event.target.value)"
+           @keyup.enter="update"
+           @blur="update"
+           ref="taskTitle"
+    />
 </template>
 
 <script>
@@ -18,6 +18,12 @@ export default {
     emits: ['update:title', 'update:editable', 'update'],
     computed: {
         isEditable() {
+            if (this.editable) {
+                this.$nextTick(() => {
+                    this.$refs.taskTitle.focus()
+                })
+            }
+
             return this.editable;
         }
     },
@@ -29,3 +35,9 @@ export default {
     }
 };
 </script>
+<style>
+.the-task-title {
+    outline: none;
+    width: 100%;
+}
+</style>

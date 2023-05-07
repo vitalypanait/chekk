@@ -1,5 +1,5 @@
 <template>
-    <v-app class="bg-grey-lighten-4" full-height>
+    <v-app class="main-background" full-height>
         <v-main>
             <v-container class="mx-auto">
                 <v-row>
@@ -9,7 +9,7 @@
                             <div>
                                 <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
                             </div>
-                            <input placeholder="Type a task" class="the-title" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
+                            <input placeholder="Type a task" class="the-add-task" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
                         </div>
                         <div class="my-5">
                             <div v-for="(task, i) in board.tasks" :key="task.id">
@@ -29,7 +29,7 @@
                 </v-row>
             </v-container>
         </v-main>
-        <v-bottom-navigation bg-color="grey-lighten-4" border="false" density="compact" elevation="0">
+        <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
             <v-menu location="top" class="rounded-xl">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
@@ -199,8 +199,11 @@ export default {
 };
 </script>
 <style>
-    .the-title {
-        background: #f5f5f5;
+    .main-background {
+        background: #f0f0f0!important;
+    }
+    .the-add-task {
+        background: #f0f0f0;
         outline: none;
     }
 </style>

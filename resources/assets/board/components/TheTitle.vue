@@ -1,17 +1,18 @@
 <template>
     <div
-        class="task-title mt-7 mb-12 ml-1"
+        class="the-title mt-7 mb-12 ml-1"
         v-show="!isEditable"
         @click="makeEditable"
         style="cursor: pointer"
     >{{ modelValue }}</div>
-    <input placeholder="Type a task"
-       class="task-title mt-7 mb-12 ml-1"
+    <input placeholder="Type a board title"
+       class="the-title mt-7 mb-12 ml-1"
        v-show="isEditable"
        :value="modelValue"
        @input="changeTitle"
        @keyup.enter="update"
        @blur="update"
+       ref="theTitle"
     />
 </template>
 
@@ -37,7 +38,11 @@ export default {
             this.$emit('update:modelValue', event.target.value)
         },
         makeEditable() {
-          this.editable = true;
+            this.editable = true;
+
+            this.$nextTick(() => {
+                this.$refs.theTitle.focus()
+            })
         },
         update() {
             this.editable = false;
@@ -47,9 +52,10 @@ export default {
 };
 </script>
 <style>
-    .task-title {
+    .the-title {
         font-size: 3rem !important;
-        background: #f5f5f5;
+        background: #f0f0f0;
         outline: none;
+        width: 100%;
     }
 </style>

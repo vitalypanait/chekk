@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Module\Board\Domain\Repository;
 
 use App\Module\Board\Domain\Entity\Board;
+use App\Module\Board\Domain\Entity\Task;
 use App\Module\Board\Domain\Entity\TaskLabel;
 
 interface TaskLabelRepository
@@ -19,4 +20,9 @@ interface TaskLabelRepository
      * @return TaskLabel[]
      */
     public function findByBoard(Board $board): array;
+
+    /**
+     * @return TaskLabel[]
+     */
+    public function findByTask(Task $task): array;
 }

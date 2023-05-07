@@ -15,9 +15,9 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu open-on-hover @click.stop="false">
+            <v-menu open-on-hover>
                 <template v-slot:activator="{ props }">
-                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2"></v-icon>
+                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2" @click.stop="false"></v-icon>
                 </template>
 
                 <v-list>
@@ -47,7 +47,7 @@
                 </v-list>
             </v-menu>
         </v-sheet>
-        <v-sheet class="mt-1 ml-13" v-if="modelValue.labels.length > 0">
+        <v-sheet class="mt-1 ml-13" v-if="modelValue.labels.length > 0"  @click="toggleCollapse">
             <div>
                 <v-chip
                     v-for="label in modelValue.labels"
@@ -159,7 +159,7 @@ export default {
         },
         deleteLabel(label) {
             this.$emit('label:delete', label)
-        }
+        },
     }
 };
 </script>

@@ -52,4 +52,15 @@ class TaskLabelRepositoryImpl extends ServiceEntityRepository implements TaskLab
             ->getQuery()
             ->getResult();
     }
+
+    public function findByTask(Task $task): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('tl')
+            ->from(TaskLabel::class, 'tl')
+            ->andWhere('tl.task = :task')
+            ->setParameter('task', $task)
+            ->getQuery()
+            ->getResult();
+    }
 }

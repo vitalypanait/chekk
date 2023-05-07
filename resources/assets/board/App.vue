@@ -35,7 +35,7 @@
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
                 </template>
 
-                <v-list class="rounded-xl" density="compact">
+                <v-list class="rounded-lg" density="compact">
                     <v-list-item
                         v-for="(status, i) in allStatuses"
                         :key="i"
@@ -50,7 +50,7 @@
                     <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
-            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false">
+            <v-menu location="top" class="rounded-lg" open-on-hover :close-on-content-click="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
                 </template>

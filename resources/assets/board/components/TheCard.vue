@@ -20,7 +20,7 @@
                     <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2" @click.stop="false"></v-icon>
                 </template>
 
-                <v-list class="rounded-xl">
+                <v-list class="rounded-lg">
                     <v-list-item value="collapse">
                         <v-list-item-title @click="toggleCollapse">Collapse</v-list-item-title>
                     </v-list-item>

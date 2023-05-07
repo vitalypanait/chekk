@@ -4,6 +4,7 @@
            class="the-task-title ml-5"
            v-show="isEditable"
            :value="title"
+           @click.stop="trySomething()"
            @input="$emit('update:title', $event.target.value)"
            @keyup.enter="update"
            @blur="update"
@@ -31,6 +32,9 @@ export default {
         update() {
             this.$emit('update', this.title);
             this.$emit('update:editable', false);
+        },
+        trySomething() {
+
         }
     }
 };

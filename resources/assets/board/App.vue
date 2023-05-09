@@ -69,6 +69,7 @@
                             :color="label.color"
                             :value="label.id"
                             :text-color="getLabelTextColor(label)"
+                            :variant="getLabelVariant(label)"
                         >{{ label.title }}</v-chip>
                     </v-list-item>
                     <v-list-item value="Reset" @click="resetLabelFilter()">Reset</v-list-item>
@@ -84,11 +85,13 @@
 import TheTitle from './components/TheTitle.vue';
 import TheCard from './components/TheCard.vue';
 import axios from "axios";
+import draggable from "vuedraggable";
+
 import { getStatuses } from './utils';
 
 export default {
     name: "App",
-    components: {TheTitle, TheCard},
+    components: {TheTitle, TheCard, draggable},
     data() {
         return {
             board: {id: '', title: '', tasks: []},
@@ -97,6 +100,7 @@ export default {
             task: '',
             filteredStatuses: [],
             filteredLabels: [],
+            myList: ["First Item", "Second Item", "Third Item"],
         };
     },
     mounted() {
@@ -138,11 +142,23 @@ export default {
                 filtered = filtered.filter((task) => this.filteredStatuses.includes(task.status))
             }
 
-            if (this.filteredLabels.length > 0) {
-                filtered = filtered.filter((task) => task.labels.filter((label) => this.filteredStatuses.includes(label.label.id)))
+            if (this.filteredLabels.length === 0) {
+                return filtered
             }
 
-            return filtered
+            let result = [];
+
+            filtered.forEach(task => {
+                task.labels.every(label => {
+                    if (this.filteredLabels.includes(label.label.id)) {
+                        result.push(task)
+
+                        return true;
+                    }
+                })
+            })
+
+            return result
         }
     },
     methods: {
@@ -248,7 +264,7 @@ export default {
         },
         getLabelVariant(label) {
             if (this.filteredLabels.includes(label.id)) {
-                return 'default'
+                return 'elevated'
             }
 
             return 'outlined'
@@ -297,5 +313,6 @@ export default {
     .the-add-task {
         background: #f0f0f0;
         outline: none;
+        width: 100%;
     }
 </style>

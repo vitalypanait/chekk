@@ -35,7 +35,6 @@
                         <div class="my-2">Labels</div>
                         <v-chip
                             v-for="label in labels"
-                            variant="outlined"
                             label
                             class="font-weight-black mr-2"
                             size="x-small"
@@ -47,7 +46,7 @@
                 </v-list>
             </v-menu>
         </v-sheet>
-        <v-sheet class="mt-1 ml-13" v-if="modelValue.labels.length > 0"  @click="toggleCollapse">
+        <v-sheet class="mt-1 ml-13" v-if="modelValue.labels.length > 0" @click="toggleCollapse">
             <div>
                 <v-chip
                     v-for="label in modelValue.labels"
@@ -62,19 +61,14 @@
             </div>
         </v-sheet>
         <v-sheet v-show="collapse">
-            <v-textarea
+            <tiptap
                 v-model="comment"
-                variant="solo"
-                flat
-                placeholder="Add a comment..."
-                rows="1"
-                row-height="20"
-                @keydown.enter.exact.prevent="addComment"
-                class="mx-10 mt-2 mb-n6"
-            ></v-textarea>
+                class="ml-14 my-4 mr-10"
+                @update:content="addComment"
+            />
             <v-divider v-if="modelValue.comments.length > 0"></v-divider>
             <v-sheet class="d-flex align-center ml-14 mt-2 mr-3" v-for="comment in modelValue.comments">
-                <div class="me-auto text-body-2">{{ comment.content }}</div>
+                <div class="me-auto text-body-2" v-html="comment.content"></div>
                 <v-icon icon="mdi-delete" size="x-small" color="grey-lighten-1" @click="deleteComment(comment.id)"></v-icon>
             </v-sheet>
         </v-sheet>
@@ -85,15 +79,16 @@
 
 import TheStatus from './TheStatus.vue';
 import TheTaskTitle from './TheTaskTitle.vue';
+import Tiptap from './Tiptap.vue'
 
 export default {
     name: 'TheTask',
-    components: {TheStatus, TheTaskTitle},
+    components: {TheStatus, TheTaskTitle, Tiptap},
     data() {
         return {
             collapse: false,
             editable: false,
-            comment: ''
+            comment: '',
         }
     },
     props: ['modelValue', 'labels'],
@@ -119,8 +114,8 @@ export default {
         deleteTask() {
             this.$emit('task:delete', this.modelValue)
         },
-        addComment(event) {
-            const value = event.target.value.trim()
+        addComment(value) {
+            value = value.trim()
 
             if (!value) {
                 return

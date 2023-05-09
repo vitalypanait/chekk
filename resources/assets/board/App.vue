@@ -208,7 +208,7 @@ export default {
                 .then(response => {
                     this.board.tasks.forEach(currentTask => {
                         if (currentTask.id === comment.taskId) {
-                            currentTask.comments.unshift(response.data)
+                            currentTask.comments.push(response.data)
                         }
                     })
                 });

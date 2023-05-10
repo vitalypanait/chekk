@@ -6,11 +6,15 @@ namespace App\Module\Board\Application\Http\API\V1;
 
 use App\Module\Board\Application\Http\API\V1\Model\Comment;
 use App\Module\Board\Application\Http\API\V1\Model\Task;
+use App\Module\Board\Application\Http\API\V1\Model\TaskPosition;
 use App\Module\Board\Application\Http\API\V1\Request\TaskCreateRequest;
+use App\Module\Board\Application\Http\API\V1\Request\TaskUpdatePositionsRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdateRequest;
 use App\Module\Board\Application\UseCase\TaskCreate\TaskCreateCommand;
 use App\Module\Board\Application\UseCase\TaskDelete\TaskDeleteCommand;
+use App\Module\Board\Application\UseCase\TaskPositionsUpdate\TaskPositionsUpdateCommand;
 use App\Module\Board\Application\UseCase\TaskUpdate\TaskUpdateCommand;
+use App\Module\Board\Domain\DTO\TaskPosition as TaskPositionDTO;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Common\Bus\CommandBus;
@@ -93,6 +97,37 @@ class TaskController extends AbstractController
         return $this->json(
             (new Task($task->getId()->toString(), $task->getTitle(), $task->getState(), [], []))->jsonSerialize()
         );
+    }
+
+    #[Route(
+        '/api/v1/task/position/',
+        methods: ['PUT']
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: TaskUpdatePositionsRequest::class)))]
+    #[OA\Tag(name: 'Task')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function updatePositions(TaskUpdatePositionsRequest $request): Response
+    {
+        $board = $this->boardRepository->findById($request->getBoardId());
+
+        if ($board === null) {
+            return new Response('', 404);
+        }
+
+        $this->commandBus->execute(
+            new TaskPositionsUpdateCommand(
+                $request->getBoardId(),
+                array_map(
+                    fn(TaskPosition $position) => new TaskPositionDTO($position->getTaskId(), $position->getPosition()),
+                    $request->getPositions()
+                )
+            )
+        );
+
+        return $this->json([]);
     }
 
     #[Route(

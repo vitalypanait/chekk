@@ -54,6 +54,8 @@ export default {
                     keydown: (view, event) => {
                         if (event.key === 'Enter' && this.editor.getText().length > 0) {
                             this.editor.commands.blur()
+
+                            return false
                         }
                     }
                 },
@@ -65,9 +67,9 @@ export default {
             onBlur: () => {
                 if (this.editor.getText().length > 0) {
                     this.$emit('update:content', this.editor.getHTML())
-                }
 
-                return true
+                    return false
+                }
             },
         })
     },

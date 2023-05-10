@@ -6,7 +6,6 @@ namespace App\Module\Board\Domain\Entity;
 
 use App\Module\Common\Traits\Timestamped;
 use DateTime;
-use DomainException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
@@ -24,6 +23,7 @@ class Task
     public function __construct(
         private readonly Board $board,
         private string         $title,
+        private int            $position,
         private string         $state = self::STATE_CREATED
     ) {
         $this->id = Uuid::uuid4();
@@ -55,5 +55,10 @@ class Task
     public function getBoard(): Board
     {
         return $this->board;
+    }
+
+    public function updatePosition(int $position): void
+    {
+        $this->position = $position;
     }
 }

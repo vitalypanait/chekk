@@ -12,18 +12,26 @@
                             <input placeholder="Type a task" class="the-add-task" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
                         </div>
                         <div class="my-5">
-                            <the-card
-                                v-for="(task, i) in filteredTasks"
-                                v-model="filteredTasks[i]"
-                                :key="task.id"
-                                :labels="labels"
-                                @task:update="updateTask"
-                                @task:delete="deleteTask"
-                                @comment:add="addComment"
-                                @comment:delete="deleteComment"
-                                @label:add="setLabel"
-                                @label:delete="deleteLabel"
-                            ></the-card>
+                            <draggable
+                                :list="filteredTasks"
+                                :disabled="filteredTasks.length !== board.tasks.length"
+                                @end="updatePositions"
+                                item-key="id"
+                            >
+                                <template #item="{ element}">
+                                    <the-card
+                                        :model-value="element"
+                                        :key="element.id"
+                                        :labels="labels"
+                                        @task:update="updateTask"
+                                        @task:delete="deleteTask"
+                                        @comment:add="addComment"
+                                        @comment:delete="deleteComment"
+                                        @label:add="setLabel"
+                                        @label:delete="deleteLabel"
+                                    ></the-card>
+                                </template>
+                            </draggable>
                         </div>
                     </v-col>
                 </v-row>
@@ -302,6 +310,19 @@ export default {
             }
 
             return status.color
+        },
+        updatePositions() {
+            let positions = [];
+
+            this.board.tasks.forEach((task, index) => {
+                positions.push({taskId: task.id, position: this.board.tasks.length - index})
+            })
+
+            axios
+                .put('/api/v1/task/position/', {
+                    boardId: this.board.id,
+                    positions: positions
+                });
         },
     }
 };

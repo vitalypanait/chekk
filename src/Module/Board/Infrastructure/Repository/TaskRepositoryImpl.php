@@ -70,7 +70,34 @@ class TaskRepositoryImpl extends ServiceEntityRepository implements TaskReposito
             ->from(Task::class, 't')
             ->andWhere('t.board = :board')
             ->setParameter('board', $board)
-            ->orderBy('t.createdAt', 'desc')
+            ->orderBy('t.position', 'desc')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getMaxPosition(Board $board): int
+    {
+        $result = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(t.position) as count')
+            ->from(Task::class, 't')
+            ->andWhere('t.board = :board')
+            ->setParameter('board', $board)
+            ->getQuery()
+            ->getScalarResult();
+
+        return (int) $result[0]['count'];
+    }
+
+    public function findTasksForUpdatePositions(string $boardId, array $taskIds): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from(Task::class, 't')
+            ->join('t.board', 'b')
+            ->andWhere('b.id = :boardId')
+            ->andWhere('t.id IN (:ids)')
+            ->setParameter('boardId', $boardId)
+            ->setParameter('ids', $taskIds)
             ->getQuery()
             ->getResult();
     }

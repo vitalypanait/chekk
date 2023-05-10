@@ -21,4 +21,11 @@ interface TaskRepository
      * @return Task[]
      */
     public function findByBoard(Board $board): array;
+
+    public function getMaxPosition(Board $board): int;
+
+    /**
+     * @return Task[]
+     */
+    public function findTasksForUpdatePositions(string $boardId, array $taskIds): array;
 }

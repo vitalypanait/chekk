@@ -22,7 +22,7 @@
 
                 <v-list class="rounded-lg">
                     <v-list-item value="collapse">
-                        <v-list-item-title @click="toggleCollapse">Collapse</v-list-item-title>
+                        <v-list-item-title @click="toggleCollapse">{{ getMenuCollapseText() }}</v-list-item-title>
                     </v-list-item>
                     <v-list-item value="edit">
                         <v-list-item-title @click="makeEditable">Edit</v-list-item-title>
@@ -155,6 +155,9 @@ export default {
         deleteLabel(label) {
             this.$emit('label:delete', label)
         },
+        getMenuCollapseText() {
+            return this.collapse ? 'Collapse' : 'Expand'
+        }
     }
 };
 </script>

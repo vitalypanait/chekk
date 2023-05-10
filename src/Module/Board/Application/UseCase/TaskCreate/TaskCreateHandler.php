@@ -19,8 +19,9 @@ class TaskCreateHandler implements CommandHandler
     public function __invoke(TaskCreateCommand $command): void
     {
         $board = $this->boardRepository->getById($command->getBoardId());
+        $lastPosition = $this->taskRepository->getMaxPosition($board);
 
-        $task = new Task($board, $command->getTitle());
+        $task = new Task($board, $command->getTitle(), ++$lastPosition);
 
         $this->taskRepository->save($task);
 

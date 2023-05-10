@@ -3,7 +3,7 @@
         <v-main>
             <v-container class="mx-auto">
                 <v-row>
-                    <v-col class="offset-sm-0 v-col-md-8 offset-md-2 v-col-lg-8 offset-lg-2">
+                    <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
                         <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
                         <div class="d-flex align-center">
                             <div>
@@ -17,6 +17,7 @@
                                 :disabled="filteredTasks.length !== board.tasks.length"
                                 @end="updatePositions"
                                 item-key="id"
+                                :handle="getHandleClass()"
                             >
                                 <template #item="{ element}">
                                     <the-card
@@ -324,6 +325,24 @@ export default {
                     positions: positions
                 });
         },
+        isMobile() {
+            const toMatch = [
+                /Android/i,
+                /webOS/i,
+                /iPhone/i,
+                /iPad/i,
+                /iPod/i,
+                /BlackBerry/i,
+                /Windows Phone/i
+            ];
+
+            return toMatch.some((toMatchItem) => {
+                return navigator.userAgent.match(toMatchItem);
+            });
+        },
+        getHandleClass() {
+            return this.isMobile() ? '.handle' : false
+        }
     }
 };
 </script>

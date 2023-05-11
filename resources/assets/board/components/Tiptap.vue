@@ -8,6 +8,7 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from '@tiptap/starter-kit'
+import BulletList from "@tiptap/extension-bullet-list";
 
 export default {
     name: 'TipTap',
@@ -45,19 +46,17 @@ export default {
                 Placeholder.configure({
                     placeholder: 'Add a comment...',
                 }),
+                BulletList.extend({
+                    addKeyboardShortcuts() {
+                        return {
+                            'Enter': () => this.editor.commands.blur(),
+                        }
+                    },
+                })
             ],
             editorProps: {
                 attributes: {
                     class: 'focus:outline-none',
-                },
-                handleDOMEvents: {
-                    keydown: (view, event) => {
-                        if (event.key === 'Enter' && this.editor.getText().length > 0) {
-                            this.editor.commands.blur()
-
-                            return false
-                        }
-                    }
                 },
             },
             content: this.modelValue,

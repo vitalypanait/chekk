@@ -14,8 +14,9 @@
                         <div class="my-5">
                             <draggable
                                 :list="filteredTasks"
-                                :disabled="filteredTasks.length !== board.tasks.length"
+                                :disabled="!isDraggable"
                                 @end="updatePositions"
+                                @start="collapseTasks"
                                 item-key="id"
                                 :handle="getHandleClass()"
                             >
@@ -24,6 +25,9 @@
                                         :model-value="element"
                                         :key="element.id"
                                         :labels="labels"
+                                        :collapseTask="collapseTask"
+                                        :isMobile="isMobile()"
+                                        @editing:update="updateEditing"
                                         @task:update="updateTask"
                                         @task:delete="deleteTask"
                                         @comment:add="addComment"
@@ -39,7 +43,7 @@
             </v-container>
         </v-main>
         <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
-            <v-menu location="top" class="rounded-xl" open-on-hover :close-on-content-click="false" :transition="false">
+            <v-menu location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
                 </template>
@@ -59,7 +63,7 @@
                     <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
-            <v-menu location="top" class="rounded-lg" open-on-hover :close-on-content-click="false" :transition="false">
+            <v-menu location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
                 </template>
@@ -110,6 +114,8 @@ export default {
             filteredStatuses: [],
             filteredLabels: [],
             myList: ["First Item", "Second Item", "Third Item"],
+            editing: false,
+            collapseTask: false
         };
     },
     mounted() {
@@ -162,12 +168,17 @@ export default {
                     if (this.filteredLabels.includes(label.label.id)) {
                         result.push(task)
 
-                        return true;
+                        return false
                     }
+
+                    return true
                 })
             })
 
             return result
+        },
+        isDraggable() {
+            return this.filteredTasks.length === this.board.tasks.length && !this.editing;
         }
     },
     methods: {
@@ -313,6 +324,8 @@ export default {
             return status.color
         },
         updatePositions() {
+            this.collapseTask = false
+
             let positions = [];
 
             this.board.tasks.forEach((task, index) => {
@@ -324,6 +337,9 @@ export default {
                     boardId: this.board.id,
                     positions: positions
                 });
+        },
+        collapseTasks() {
+            this.collapseTask = true
         },
         isMobile() {
             const toMatch = [
@@ -342,6 +358,9 @@ export default {
         },
         getHandleClass() {
             return this.isMobile() ? '.handle' : false
+        },
+        updateEditing(value) {
+            this.editing = value
         }
     }
 };

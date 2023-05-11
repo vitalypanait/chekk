@@ -15,9 +15,9 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu open-on-hover open-delay="50" :transition="false">
+            <v-menu :open-on-hover="!isMobile" :open-on-click="isMobile" open-delay="50" :transition="false">
                 <template v-slot:activator="{ props }">
-                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click.stop="false"></v-icon>
+                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle"></v-icon>
                 </template>
 
                 <v-list class="rounded-lg">
@@ -50,7 +50,6 @@
             <div>
                 <v-chip
                     v-for="label in modelValue.labels"
-                    variant="outlined"
                     label
                     class="font-weight-black mx-1"
                     size="x-small"
@@ -91,9 +90,10 @@ export default {
             comment: '',
         }
     },
-    props: ['modelValue', 'labels'],
+    props: ['modelValue', 'labels', 'collapseTask', 'isMobile'],
     emits: [
         'update:modelValue',
+        'editing:update',
         'task:update',
         'task:delete',
         'comment:add',
@@ -101,6 +101,16 @@ export default {
         'label:add',
         'label:delete'
     ],
+    watch: {
+        editable(newValue, oldValue) {
+            this.$emit('editing:update', newValue)
+        },
+        collapseTask(newValue, oldValue) {
+            if (newValue) {
+                this.collapse = false
+            }
+        }
+    },
     methods: {
         toggleCollapse() {
             this.collapse = !this.collapse;

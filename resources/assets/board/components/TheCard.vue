@@ -15,22 +15,31 @@
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
-            <v-menu :open-on-hover="!isMobile" :open-on-click="isMobile" open-delay="50" :transition="false">
+            <v-menu
+                :open-on-hover="!isMobile"
+                :open-on-click="isMobile"
+                open-delay="50"
+                :transition="false"
+                :close-on-content-click="false"
+            >
                 <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle"></v-icon>
                 </template>
 
                 <v-list class="rounded-lg">
                     <v-list-item value="collapse">
-                        <v-list-item-title @click="toggleCollapse">{{ getMenuCollapseText() }}</v-list-item-title>
+                        <div @click="toggleCollapse">{{ getMenuCollapseText() }}</div>
                     </v-list-item>
                     <v-list-item value="edit">
-                        <v-list-item-title @click="makeEditable">Edit</v-list-item-title>
+                        <div @click="makeEditable">Edit</div>
                     </v-list-item>
-                    <v-list-item value="delete">
-                        <v-list-item-title @click="deleteTask">Delete</v-list-item-title>
+                    <v-list-item value="delete" v-show="!isConfirmingDelete">
+                        <div @click="showConfirm">Delete</div>
                     </v-list-item>
-                    <v-divider v-show=labels.length > 0"></v-divider>
+                    <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
+                        <div @click="deleteTask" class="text-red">Confirm</div>
+                    </v-list-item>
+                    <v-divider v-show="labels.length > 0"></v-divider>
                     <v-list-item v-show="labels.length > 0">
                         <div class="my-2">Labels</div>
                         <v-chip
@@ -66,28 +75,33 @@
                 @update:content="addComment"
             />
             <v-divider v-if="modelValue.comments.length > 0"></v-divider>
-            <v-sheet class="d-flex align-center ml-14 mt-2 mr-3" v-for="comment in modelValue.comments">
-                <div class="me-auto text-body-2" v-html="comment.content"></div>
-                <v-icon icon="mdi-delete" size="x-small" color="grey-lighten-1" @click="deleteComment(comment.id)"></v-icon>
-            </v-sheet>
+            <div v-for="(comment, i) in modelValue.comments" :key="comment.id">
+                <the-comment
+                    v-model="modelValue.comments[i]"
+                    :cancel-delete="!collapse"
+                    @comment:delete="deleteComment"
+                ></the-comment>
+            </div>
         </v-sheet>
     </v-card>
 </template>
 
 <script>
 
+import TheComment from './TheComment.vue';
 import TheStatus from './TheStatus.vue';
 import TheTaskTitle from './TheTaskTitle.vue';
 import Tiptap from './Tiptap.vue'
 
 export default {
     name: 'TheTask',
-    components: {TheStatus, TheTaskTitle, Tiptap},
+    components: {TheStatus, TheTaskTitle, Tiptap, TheComment},
     data() {
         return {
             collapse: false,
             editable: false,
             comment: '',
+            isConfirmingDelete: false
         }
     },
     props: ['modelValue', 'labels', 'collapseTask', 'isMobile'],
@@ -167,6 +181,12 @@ export default {
         },
         getMenuCollapseText() {
             return this.collapse ? 'Collapse' : 'Expand'
+        },
+        showConfirm() {
+            this.isConfirmingDelete = true
+        },
+        showDelete() {
+            this.isConfirmingDelete = false
         }
     }
 };

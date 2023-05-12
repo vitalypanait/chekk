@@ -23,13 +23,13 @@
                 :close-on-content-click="false"
             >
                 <template v-slot:activator="{ props }">
-                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle"></v-icon>
+                    <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click="showDelete"></v-icon>
                 </template>
 
                 <v-list class="rounded-lg">
-                    <v-list-item value="collapse">
-                        <div @click="toggleCollapse">{{ getMenuCollapseText() }}</div>
-                    </v-list-item>
+<!--                    <v-list-item value="collapse">-->
+<!--                        <div @click="toggleCollapse">{{ getMenuCollapseText() }}</div>-->
+<!--                    </v-list-item>-->
                     <v-list-item value="edit">
                         <div @click="makeEditable">Edit</div>
                     </v-list-item>

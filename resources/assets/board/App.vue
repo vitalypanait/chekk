@@ -33,13 +33,32 @@
                                         @comment:add="addComment"
                                         @comment:delete="deleteComment"
                                         @label:add="setLabel"
-                                        @label:delete="deleteLabel"
+                                        @label:delete="deleteTaskLabel"
                                     ></the-card>
                                 </template>
                             </draggable>
                         </div>
                     </v-col>
                 </v-row>
+                <div class="text-center">
+                    <v-dialog
+                        v-model="labelDialog"
+                        width="auto"
+                    >
+                        <v-card class="pa-5" min-width="250">
+                            <div v-for="(label, i) in labels" :key="label.id">
+                                <the-label
+                                    v-model="labels[i]"
+                                    @delete:label="deleteLabel"
+                                    @update:label="updateLabel"
+                                ></the-label>
+                            </div>
+
+                            <v-divider class="mt-2" v-show="isShowAddLabels"></v-divider>
+                            <div class="mt-2" style="cursor: pointer" @click="addLabel" v-show="isShowAddLabels">Add label</div>
+                        </v-card>
+                    </v-dialog>
+                </div>
             </v-container>
         </v-main>
         <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
@@ -68,7 +87,7 @@
                     <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
                 </template>
 
-                <v-list class="rounded-xl" density="compact">
+                <v-list class="rounded-lg" density="compact">
                     <v-list-item
                         v-for="(label, i) in labels"
                         :key="i"
@@ -85,7 +104,9 @@
                             :variant="getLabelVariant(label)"
                         >{{ label.title }}</v-chip>
                     </v-list-item>
-                    <v-list-item value="Reset" @click="resetLabelFilter()">Reset</v-list-item>
+                    <v-list-item value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
+                    <v-list-item value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
+                    <v-list-item value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                 </v-list>
             </v-menu>
             <v-btn value="access">Access</v-btn>
@@ -97,23 +118,34 @@
 
 import TheTitle from './components/TheTitle.vue';
 import TheCard from './components/TheCard.vue';
+import TheLabel from './components/TheLabel.vue';
 import axios from "axios";
 import draggable from "vuedraggable";
 
 import { getStatuses } from './utils';
+import TheComment from "./components/TheComment.vue";
 
 export default {
     name: "App",
-    components: {TheTitle, TheCard, draggable},
+    components: {TheComment, TheTitle, TheCard, TheLabel, draggable},
     data() {
         return {
             board: {id: '', title: '', tasks: []},
+            labelDialog: false,
             labels: [],
+            labelColors: [
+                'red-darken-1',
+                'amber-darken-4',
+                'yellow-darken-2',
+                'green-accent-4',
+                'light-blue-accent-3',
+                'indigo-accent-4',
+                'deep-purple-accent-4'
+            ],
             debug: '',
             task: '',
             filteredStatuses: [],
             filteredLabels: [],
-            myList: ["First Item", "Second Item", "Third Item"],
             editing: false,
             collapseTask: false
         };
@@ -179,6 +211,12 @@ export default {
         },
         isDraggable() {
             return this.filteredTasks.length === this.board.tasks.length && !this.editing;
+        },
+        haveLabels() {
+            return this.labels.length > 0
+        },
+        isShowAddLabels() {
+            return this.labels.length < this.labelColors.length
         }
     },
     methods: {
@@ -255,7 +293,7 @@ export default {
                     })
                 });
         },
-        deleteLabel(label) {
+        deleteTaskLabel(label) {
             axios
                 .delete('/api/v1/task-label/' + label.id)
                 .then(response => {
@@ -287,7 +325,7 @@ export default {
                 return 'elevated'
             }
 
-            return 'outlined'
+            return 'tonal'
         },
         getLabelTextColor(label) {
             if (this.filteredLabels.includes(label.id)) {
@@ -338,6 +376,21 @@ export default {
                     positions: positions
                 });
         },
+        deleteLabel(label) {
+            axios
+                .delete('/api/v1/label/' + label.id)
+                .then(response => {
+                    this.labels = this.labels.filter((item) => item.id !== label.id)
+
+                    this.board.tasks.forEach(currentTask => {
+                        currentTask.labels = currentTask.labels.filter((item) => item.label.id !== label.id)
+                    })
+
+                    if (!this.haveLabels) {
+                        this.labelDialog = false
+                    }
+                });
+        },
         collapseTasks() {
             this.collapseTask = true
         },
@@ -361,6 +414,51 @@ export default {
         },
         updateEditing(value) {
             this.editing = value
+        },
+        showLabelsEditor() {
+            if (!this.haveLabels) {
+                this.addLabel()
+            }
+
+            this.labelDialog = true
+        },
+        addLabel() {
+            let newLabelColor = '';
+
+            if (!this.isShowAddLabels) {
+                return
+            }
+
+            if (!this.haveLabels) {
+                newLabelColor = this.labelColors[0]
+            } else {
+                const currentLabelColors = this.labels.map(label => label.color)
+
+                this.labelColors.every((color) => {
+                    if (!currentLabelColors.includes(color)) {
+                        newLabelColor = color
+
+                        return false
+                    }
+
+                    return true
+                })
+            }
+
+            axios
+                .post(
+                    '/api/v1/label/',
+                    {boardId: this.board.id, color: newLabelColor, title: 'label'}
+                )
+                .then(response => {
+                    this.labels.push(response.data)
+                });
+        },
+        updateLabel(label) {
+            axios.put(
+                '/api/v1/label/',
+                { id: label.id, title: label.title }
+            );
         }
     }
 };

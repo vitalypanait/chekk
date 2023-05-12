@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Module\Board\Infrastructure\Repository;
 
 use App\Module\Board\Domain\Entity\Board;
+use App\Module\Board\Domain\Entity\Label;
 use App\Module\Board\Domain\Entity\Task;
 use App\Module\Board\Domain\Entity\TaskLabel;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
@@ -60,6 +61,17 @@ class TaskLabelRepositoryImpl extends ServiceEntityRepository implements TaskLab
             ->from(TaskLabel::class, 'tl')
             ->andWhere('tl.task = :task')
             ->setParameter('task', $task)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByLabel(Label $label): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('tl')
+            ->from(TaskLabel::class, 'tl')
+            ->andWhere('tl.label = :label')
+            ->setParameter('label', $label)
             ->getQuery()
             ->getResult();
     }

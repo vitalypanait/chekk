@@ -48,7 +48,7 @@ class LabelRepositoryImpl extends ServiceEntityRepository implements LabelReposi
             ->from(Label::class, 'l')
             ->andWhere('l.board = :board')
             ->setParameter('board', $board)
-            ->orderBy('l.createdAt', 'desc')
+            ->orderBy('l.createdAt', 'asc')
             ->getQuery()
             ->getResult();
     }

@@ -6,8 +6,10 @@ namespace App\Module\Board\Application\Http\API\V1;
 
 use App\Module\Board\Application\Http\API\V1\Model\Label;
 use App\Module\Board\Application\Http\API\V1\Request\LabelCreateRequest;
+use App\Module\Board\Application\Http\API\V1\Request\LabelUpdateRequest;
 use App\Module\Board\Application\UseCase\LabelCreate\LabelCreateCommand;
 use App\Module\Board\Application\UseCase\LabelDelete\LabelDeleteCommand;
+use App\Module\Board\Application\UseCase\LabelUpdate\LabelUpdateCommand;
 use App\Module\Board\Domain\Entity\Label as LabelEntity;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\LabelRepository;
@@ -50,6 +52,30 @@ class LabelController extends AbstractController
         $this->commandBus->execute($command);
 
         $label = $this->labelRepository->getById($command->getId());
+
+        return $this->json(
+            (new Label($label->getId()->toString(), $label->getTitle(), $label->getColor()))->jsonSerialize()
+        );
+    }
+
+    #[Route(
+        '/api/v1/label/',
+        methods: ['PUT']
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: LabelUpdateRequest::class)))]
+    #[OA\Tag(name: 'Label')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns info about label',
+        content: new Model(type: Label::class)
+    )]
+    public function update(LabelUpdateRequest $request): Response
+    {
+        $label = $this->labelRepository->getById($request->getId());
+
+        $this->commandBus->execute(new LabelUpdateCommand($request->getId(), $request->getTitle()));
+
+        $label = $this->labelRepository->getById($label->getId()->toString());
 
         return $this->json(
             (new Label($label->getId()->toString(), $label->getTitle(), $label->getColor()))->jsonSerialize()

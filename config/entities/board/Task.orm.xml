@@ -15,6 +15,7 @@
         <many-to-one field="board" target-entity="App\Module\Board\Domain\Entity\Board">
             <join-column name="board_id" nullable="false"/>
         </many-to-one>
+        <field name="archivedAt" type="datetime" nullable="true"/>
         <field name="createdAt" type="datetime">
             <gedmo:timestampable on="create"/>
         </field>

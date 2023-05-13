@@ -12,7 +12,9 @@ use App\Module\Board\Application\Http\API\V1\Request\TaskUpdatePositionsRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdateRequest;
 use App\Module\Board\Application\UseCase\TaskCreate\TaskCreateCommand;
 use App\Module\Board\Application\UseCase\TaskDelete\TaskDeleteCommand;
+use App\Module\Board\Application\UseCase\TaskMoveToArchive\TaskMoveToArchiveCommand;
 use App\Module\Board\Application\UseCase\TaskPositionsUpdate\TaskPositionsUpdateCommand;
+use App\Module\Board\Application\UseCase\TaskRemoveFromArchive\TaskRemoveFromArchiveCommand;
 use App\Module\Board\Application\UseCase\TaskUpdate\TaskUpdateCommand;
 use App\Module\Board\Domain\DTO\TaskPosition as TaskPositionDTO;
 use App\Module\Board\Domain\Repository\BoardRepository;
@@ -125,6 +127,54 @@ class TaskController extends AbstractController
                     $request->getPositions()
                 )
             )
+        );
+
+        return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/task/archive/{id}',
+        methods: ['PUT']
+    )]
+    #[OA\Tag(name: 'Task')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function moveToArchive(string $id): Response
+    {
+        $task = $this->taskRepository->findById($id);
+
+        if ($task === null) {
+            return new Response('', 404);
+        }
+
+        $this->commandBus->execute(
+            new TaskMoveToArchiveCommand($id)
+        );
+
+        return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/task/archive/{id}',
+        methods: ['DELETE']
+    )]
+    #[OA\Tag(name: 'Task')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function removeFromArchive(string $id): Response
+    {
+        $task = $this->taskRepository->findById($id);
+
+        if ($task === null) {
+            return new Response('', 404);
+        }
+
+        $this->commandBus->execute(
+            new TaskRemoveFromArchiveCommand($id)
         );
 
         return $this->json([]);

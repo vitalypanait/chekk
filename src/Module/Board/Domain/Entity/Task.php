@@ -24,7 +24,8 @@ class Task
         private readonly Board $board,
         private string         $title,
         private int            $position,
-        private string         $state = self::STATE_CREATED
+        private string         $state = self::STATE_CREATED,
+        private ?DateTime      $archivedAt = null
     ) {
         $this->id = Uuid::uuid4();
         $this->createdAt = new DateTime();
@@ -60,5 +61,15 @@ class Task
     public function updatePosition(int $position): void
     {
         $this->position = $position;
+    }
+
+    public function moveToArchive(): void
+    {
+        $this->archivedAt = new DateTime();
+    }
+
+    public function removeFromArchive(): void
+    {
+        $this->archivedAt = null;
     }
 }

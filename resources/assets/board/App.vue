@@ -30,6 +30,7 @@
                                         @editing:update="updateEditing"
                                         @task:update="updateTask"
                                         @task:delete="deleteTask"
+                                        @task:archive="archiveTask"
                                         @comment:add="addComment"
                                         @comment:delete="deleteComment"
                                         @label:add="setLabel"
@@ -37,6 +38,25 @@
                                     ></the-card>
                                 </template>
                             </draggable>
+                        </div>
+                    </v-col>
+                </v-row>
+                <v-row v-show="board.archivedTasks.length > 0">
+                    <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+                        <div class="text-h5 text-grey font-weight-medium d-flex align-center" style="cursor: pointer" @click="toggleCollapseArchived">
+                            <div>Archive {{ board.archivedTasks.length }}</div>
+                            <v-icon :icon="this.collapseArchived ? 'mdi-chevron-up' : 'mdi-chevron-down'" class="ml-2"></v-icon>
+                        </div>
+                        <div class="my-5" v-show="collapseArchived">
+                            <the-archived-task
+                                v-for="(archivedTask, i) in board.archivedTasks"
+                                :key="archivedTask.id"
+                                v-model="board.archivedTasks[i]"
+                                :labels="labels"
+                                :isMobile="isMobile()"
+                                @task:delete="deleteArchivedTask"
+                                @task:restore="restoreTask"
+                            ></the-archived-task>
                         </div>
                     </v-col>
                 </v-row>
@@ -118,6 +138,7 @@
 
 import TheTitle from './components/TheTitle.vue';
 import TheCard from './components/TheCard.vue';
+import TheArchivedTask from './components/TheArchivedTask.vue';
 import TheLabel from './components/TheLabel.vue';
 import axios from "axios";
 import draggable from "vuedraggable";
@@ -127,10 +148,10 @@ import TheComment from "./components/TheComment.vue";
 
 export default {
     name: "App",
-    components: {TheComment, TheTitle, TheCard, TheLabel, draggable},
+    components: {TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
     data() {
         return {
-            board: {id: '', title: '', tasks: []},
+            board: {id: '', title: '', tasks: [], archivedTasks: []},
             labelDialog: false,
             labels: [],
             labelColors: [
@@ -147,7 +168,8 @@ export default {
             filteredStatuses: [],
             filteredLabels: [],
             editing: false,
-            collapseTask: false
+            collapseTask: false,
+            collapseArchived: false
         };
     },
     mounted() {
@@ -157,6 +179,7 @@ export default {
                 this.board.id = response.data.id;
                 this.board.title = response.data.title;
                 this.board.tasks = response.data.tasks
+                this.board.archivedTasks = response.data.archivedTasks
             });
 
         axios
@@ -252,6 +275,31 @@ export default {
                 .delete('/api/v1/task/' + task.id)
                 .then(response => {
                     this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
+                });
+        },
+        deleteArchivedTask(task) {
+            axios
+                .delete('/api/v1/task/' + task.id)
+                .then(response => {
+                    this.board.archivedTasks = this.board.archivedTasks.filter((item) => item.id !== task.id)
+                });
+        },
+        archiveTask(task) {
+            axios
+                .put('/api/v1/task/archive/' + task.id)
+                .then(response => {
+                    this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
+                    this.board.archivedTasks.push(task)
+                });
+        },
+        restoreTask(task) {
+            axios
+                .delete('/api/v1/task/archive/' + task.id)
+                .then(response => {
+                    this.board.archivedTasks = this.board.archivedTasks.filter((item) => item.id !== task.id)
+                    this.board.tasks.unshift(task)
+
+                    this.updatePositions()
                 });
         },
         addComment(comment) {
@@ -459,6 +507,9 @@ export default {
                 '/api/v1/label/',
                 { id: label.id, title: label.title }
             );
+        },
+        toggleCollapseArchived() {
+            this.collapseArchived = !this.collapseArchived
         }
     }
 };

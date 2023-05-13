@@ -123,6 +123,7 @@ class BoardController extends AbstractController
     private function getFormattedBoard(Board $board): array
     {
         $tasks = [];
+        $archivedTasks = [];
         $taskIds = [];
 
         foreach ($this->taskLabelRepository->findByBoard($board) as $taskLabel) {
@@ -139,7 +140,7 @@ class BoardController extends AbstractController
             ];
         }
 
-        foreach ($this->taskRepository->findByBoard($board) as $task) {
+        foreach ($this->taskRepository->findActiveByBoard($board) as $task) {
             $taskIds[] = $task->getId()->toString();
 
             $tasks[$task->getId()->toString()] = [
@@ -151,19 +152,41 @@ class BoardController extends AbstractController
             ];
         }
 
+        foreach ($this->taskRepository->findArchivedByBoard($board) as $task) {
+            $taskIds[] = $task->getId()->toString();
+
+            $archivedTasks[$task->getId()->toString()] = [
+                'id' => $task->getId()->toString(),
+                'title' => $task->getTitle(),
+                'status' => $task->getState(),
+                'labels' => $labels[$task->getId()->toString()] ?? [],
+                'comments' => []
+            ];
+        }
+
         if (!empty($taskIds)) {
             foreach ($this->commentRepository->findByTaskIds($taskIds) as $comment) {
-                $tasks[$comment->getTask()->getId()->toString()]['comments'][] = [
-                    'id' => $comment->getId()->toString(),
-                    'content' => $comment->getContent(),
-                ];
+                if (isset($tasks[$comment->getTask()->getId()->toString()])) {
+                    $tasks[$comment->getTask()->getId()->toString()]['comments'][] = [
+                        'id' => $comment->getId()->toString(),
+                        'content' => $comment->getContent(),
+                    ];
+                }
+
+                if (isset($archivedTasks[$comment->getTask()->getId()->toString()])) {
+                    $archivedTasks[$comment->getTask()->getId()->toString()]['comments'][] = [
+                        'id' => $comment->getId()->toString(),
+                        'content' => $comment->getContent(),
+                    ];
+                }
             }
         }
 
         return [
             'id' => $board->getId(),
             'title' => $board->getTitle() === null ? '' : $board->getTitle(),
-            'tasks' => array_values($tasks)
+            'tasks' => array_values($tasks),
+            'archivedTasks' => array_values($archivedTasks)
         ];
     }
 }

@@ -11,7 +11,8 @@
             ></the-task-title>
             <v-badge
                 v-if="modelValue.comments.length > 0"
-                color="grey-lighten-3 mr-1"
+                color="grey-lighten-3"
+                class=" mr-1"
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>
@@ -32,6 +33,9 @@
 <!--                    </v-list-item>-->
                     <v-list-item value="edit">
                         <div @click="makeEditable">Edit</div>
+                    </v-list-item>
+                    <v-list-item value="archive">
+                        <div @click="archive">Archive</div>
                     </v-list-item>
                     <v-list-item value="delete" v-show="!isConfirmingDelete">
                         <div @click="showConfirm">Delete</div>
@@ -110,6 +114,7 @@ export default {
         'editing:update',
         'task:update',
         'task:delete',
+        'task:archive',
         'comment:add',
         'comment:delete',
         'label:add',
@@ -187,6 +192,9 @@ export default {
         },
         showDelete() {
             this.isConfirmingDelete = false
+        },
+        archive() {
+            this.$emit('task:archive', this.modelValue)
         }
     }
 };

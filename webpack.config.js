@@ -3,7 +3,7 @@ const TerserWebpackPlugin = require('terser-webpack-plugin');
 const {VueLoaderPlugin} = require('vue-loader')
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     entry: './resources/assets/board/main.js',
     output: {
         path: path.resolve(__dirname, './public/dist'),

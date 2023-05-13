@@ -1,6 +1,7 @@
 const path = require('path')
 const TerserWebpackPlugin = require('terser-webpack-plugin');
-const {VueLoaderPlugin} = require('vue-loader')
+const { VueLoaderPlugin } = require('vue-loader')
+const { VuetifyPlugin } = require('webpack-plugin-vuetify')
 
 module.exports = {
     mode: 'production',
@@ -17,7 +18,8 @@ module.exports = {
         ]
     },
     plugins: [
-        new VueLoaderPlugin()
+        new VueLoaderPlugin(),
+        new VuetifyPlugin({}),
     ],
     optimization: {
         runtimeChunk: 'single',

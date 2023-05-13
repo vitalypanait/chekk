@@ -18,6 +18,6 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-CMD npm i ; npm run build ; composer i -o ; wait-for-it db:5432 -- bin/console doctrine:migrations:migrate ;  php-fpm
+CMD npm i ; npm run build ; composer i -o ; wait-for-it db:5432 -- bin/console --no-interaction doctrine:migrations:migrate ;  php-fpm
 
 EXPOSE 9000

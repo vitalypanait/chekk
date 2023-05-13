@@ -54,6 +54,7 @@
                             :color="label.color"
                             text-color="white"
                             @click.stop="mutateLabel(label)"
+                            :variant="getLabelVariant(label)"
                         >{{ label.title }}</v-chip>
                     </v-list-item>
                 </v-list>
@@ -130,6 +131,11 @@ export default {
             }
         }
     },
+    computed: {
+        currentLabelColors() {
+            return this.modelValue.labels.map(label => label.label.color)
+        }
+    },
     methods: {
         toggleCollapse() {
             this.collapse = !this.collapse;
@@ -195,6 +201,9 @@ export default {
         },
         archive() {
             this.$emit('task:archive', this.modelValue)
+        },
+        getLabelVariant(label) {
+            return this.currentLabelColors.includes(label.color) ? 'elevated' : 'tonal'
         }
     }
 };

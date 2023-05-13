@@ -31,8 +31,6 @@
     "webpack-cli": "^5.0.2"
   },
   "devDependencies": {
-    "@symfony/webpack-encore": "^4.3.0",
-    "terser-webpack-plugin": "^5.3.8",
-    "webpack-notifier": "^1.15.0"
+    "terser-webpack-plugin": "^5.3.8"
   }
 }

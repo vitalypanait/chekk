@@ -8,6 +8,7 @@
             <v-badge
                 v-if="modelValue.comments.length > 0"
                 color="grey-lighten-3 mr-1"
+                text-color="grey"
                 :content="modelValue.comments.length"
                 inline
             ></v-badge>

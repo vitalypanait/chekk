@@ -20,19 +20,23 @@ USAGE
 }
 
 wait_for() {
+  echo "[Wait for it]: started..." >&2
   for i in `seq $TIMEOUT` ; do
+    echo "DB host = $HOST, DB port = $PORT"
     nc -z "$HOST" "$PORT" > /dev/null 2>&1
     
     result=$?
     if [ $result -eq 0 ] ; then
+      echo "[Wait for it]: DB connection checked successfully!"
       if [ $# -gt 0 ] ; then
+	echo "[Wait for it]: $@ will be run"
         exec "$@"
       fi
       exit 0
     fi
     sleep 1
   done
-  echo "Operation timed out" >&2
+  echo "[Wait for it]: Operation timed out" >&2
   exit 1
 }
 

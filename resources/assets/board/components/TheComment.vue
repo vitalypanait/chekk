@@ -1,8 +1,8 @@
 <template>
     <v-sheet class="d-flex align-center ml-14 mt-2 mr-3">
         <div class="me-auto text-body-2" v-html="modelValue.content"></div>
-        <v-icon icon="mdi-delete" size="x-small" color="grey-lighten-1" v-show="!isConfirmingDelete" @click="showConfirm"></v-icon>
-        <v-icon icon="mdi-delete-forever" size="x-small" color="red" v-show="isConfirmingDelete" @click="deleteComment(modelValue.id)" @mouseleave="showDelete"></v-icon>
+        <v-icon class="ml-3" icon="mdi-delete" size="x-small" color="grey-lighten-1" v-show="!isConfirmingDelete" @click="showConfirm"></v-icon>
+        <v-icon class="ml-3" icon="mdi-delete-forever" size="x-small" color="red" v-show="isConfirmingDelete" @click="deleteComment(modelValue.id)" @mouseleave="showDelete"></v-icon>
     </v-sheet>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer">
+    <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer;">
         <v-sheet class="d-flex align-start" :class="isMobile ? '' : 'handle'" @click="toggleCollapse">
             <div class="ml-3">
                 <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
@@ -73,7 +73,7 @@
         <v-sheet v-show="collapse">
             <tiptap
                 v-model="comment"
-                class="ml-14 my-4 mr-10"
+                class="ml-14 my-4 mr-10 text-body-2"
                 @update:content="addComment"
             />
             <v-divider v-if="modelValue.comments.length > 0"></v-divider>

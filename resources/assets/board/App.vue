@@ -45,7 +45,7 @@
                     <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
                         <div class="text-h5 text-grey font-weight-medium d-flex align-center" style="cursor: pointer" @click="toggleCollapseArchived">
                             <div>Archive {{ board.archivedTasks.length }}</div>
-                            <v-icon :icon="this.collapseArchived ? 'mdi-chevron-up' : 'mdi-chevron-down'" class="ml-2"></v-icon>
+                            <v-icon size="small" :icon="this.collapseArchived ? 'mdi-chevron-up' : 'mdi-chevron-down'" class="ml-2"></v-icon>
                         </div>
                         <div class="my-5" v-show="collapseArchived">
                             <the-archived-task
@@ -82,7 +82,7 @@
             </v-container>
         </v-main>
         <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
-            <v-menu location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+            <v-menu open-delay="50" location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="statuses" v-bind="props">Statuses</v-btn>
                 </template>
@@ -102,7 +102,7 @@
                     <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
-            <v-menu location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+            <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                 <template v-slot:activator="{ props }">
                     <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
                 </template>

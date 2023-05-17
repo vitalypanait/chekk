@@ -1,6 +1,6 @@
 <template>
     <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer">
-        <v-sheet class="d-flex align-start" @click="toggleCollapse">
+        <v-sheet class="d-flex align-start" :class="isMobile ? '' : 'handle'" @click="toggleCollapse">
             <div class="ml-3">
                 <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
             </div>
@@ -28,9 +28,6 @@
                 </template>
 
                 <v-list class="rounded-lg">
-<!--                    <v-list-item value="collapse">-->
-<!--                        <div @click="toggleCollapse">{{ getMenuCollapseText() }}</div>-->
-<!--                    </v-list-item>-->
                     <v-list-item value="edit">
                         <div @click="makeEditable">Edit</div>
                     </v-list-item>

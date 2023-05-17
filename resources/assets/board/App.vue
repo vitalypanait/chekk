@@ -18,7 +18,7 @@
                                 @end="updatePositions"
                                 @start="collapseTasks"
                                 item-key="id"
-                                :handle="getHandleClass()"
+                                handle=".handle"
                             >
                                 <template #item="{ element}">
                                     <the-card
@@ -49,9 +49,9 @@
                         </div>
                         <div class="my-5" v-show="collapseArchived">
                             <the-archived-task
-                                v-for="(archivedTask, i) in board.archivedTasks"
+                                v-for="(archivedTask, i) in filteredArchivedTasks"
                                 :key="archivedTask.id"
-                                v-model="board.archivedTasks[i]"
+                                v-model="filteredArchivedTasks[i]"
                                 :labels="labels"
                                 :isMobile="isMobile()"
                                 @task:delete="deleteArchivedTask"
@@ -122,7 +122,7 @@
                             :value="label.id"
                             :text-color="getLabelTextColor(label)"
                             :variant="getLabelVariant(label)"
-                        >{{ label.title }}</v-chip>
+                        >{{ label.title }} {{ getLabelCount(label) }}</v-chip>
                     </v-list-item>
                     <v-list-item value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
                     <v-list-item value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
@@ -155,13 +155,13 @@ export default {
             labelDialog: false,
             labels: [],
             labelColors: [
+                'indigo-accent-4',
+                'deep-purple-accent-4',
                 'red-darken-1',
                 'amber-darken-4',
                 'yellow-darken-2',
                 'green-accent-4',
                 'light-blue-accent-3',
-                'indigo-accent-4',
-                'deep-purple-accent-4'
             ],
             debug: '',
             task: '',
@@ -169,24 +169,11 @@ export default {
             filteredLabels: [],
             editing: false,
             collapseTask: false,
-            collapseArchived: false
+            collapseArchived: false,
         };
     },
     mounted() {
-        axios
-            .get('/api/v1/board/' + window.location.pathname.substring(1))
-            .then(response => {
-                this.board.id = response.data.id;
-                this.board.title = response.data.title;
-                this.board.tasks = response.data.tasks
-                this.board.archivedTasks = response.data.archivedTasks
-            });
-
-        axios
-            .get('/api/v1/label/byBoard/' + window.location.pathname.substring(1))
-            .then(response => {
-                this.labels = response.data
-            });
+        this.syncTasks()
     },
     computed: {
         allStatuses() {
@@ -205,20 +192,73 @@ export default {
 
             return statusesCount
         },
-        filteredTasks() {
-            let filtered = this.board.tasks
+        labelsCount() {
+            let labelsCount = [];
 
+            this.labels.forEach(label => {
+                labelsCount[label.id] = 0;
+            })
+
+            this.board.tasks.forEach(currentTask => {
+                currentTask.labels.forEach(label => {
+                    labelsCount[label.label.id] += 1;
+                })
+
+            })
+
+            return labelsCount
+        },
+        filteredTasks() {
+            return this.filterTasks(this.board.tasks)
+        },
+        filteredArchivedTasks() {
+            let filteredTasks = this.filterTasks(this.board.archivedTasks);
+
+            if (filteredTasks.length !== 0 && filteredTasks.length < this.board.archivedTasks.length) {
+                this.collapseArchived = true
+            }
+
+            return filteredTasks
+        },
+        isDraggable() {
+            return this.filteredTasks.length === this.board.tasks.length && !this.editing;
+        },
+        haveLabels() {
+            return this.labels.length > 0
+        },
+        isShowAddLabels() {
+            return this.labels.length < this.labelColors.length
+        }
+    },
+    methods: {
+        syncTasks() {
+            axios
+                .get('/api/v1/board/' + window.location.pathname.substring(1))
+                .then(response => {
+                    this.board.id = response.data.id;
+                    this.board.title = response.data.title;
+                    this.board.tasks = response.data.tasks
+                    this.board.archivedTasks = response.data.archivedTasks
+                });
+
+            axios
+                .get('/api/v1/label/byBoard/' + window.location.pathname.substring(1))
+                .then(response => {
+                    this.labels = response.data
+                });
+        },
+        filterTasks(tasks) {
             if (this.filteredStatuses.length > 0) {
-                filtered = filtered.filter((task) => this.filteredStatuses.includes(task.status))
+                tasks = tasks.filter((task) => this.filteredStatuses.includes(task.status))
             }
 
             if (this.filteredLabels.length === 0) {
-                return filtered
+                return tasks
             }
 
             let result = [];
 
-            filtered.forEach(task => {
+            tasks.forEach(task => {
                 task.labels.every(label => {
                     if (this.filteredLabels.includes(label.label.id)) {
                         result.push(task)
@@ -232,17 +272,6 @@ export default {
 
             return result
         },
-        isDraggable() {
-            return this.filteredTasks.length === this.board.tasks.length && !this.editing;
-        },
-        haveLabels() {
-            return this.labels.length > 0
-        },
-        isShowAddLabels() {
-            return this.labels.length < this.labelColors.length
-        }
-    },
-    methods: {
         updateTitle(title) {
             axios.put('/api/v1/board/' + this.board.id, {title: title});
         },
@@ -289,7 +318,7 @@ export default {
                 .put('/api/v1/task/archive/' + task.id)
                 .then(response => {
                     this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
-                    this.board.archivedTasks.push(task)
+                    this.board.archivedTasks.unshift(task)
                 });
         },
         restoreTask(task) {
@@ -354,6 +383,9 @@ export default {
         },
         getStatusCount(status) {
             return this.statusesCount[status]
+        },
+        getLabelCount(label) {
+            return this.labelsCount[label.id]
         },
         updateLabelFilter(label) {
             if (this.filteredLabels.includes(label.id)) {
@@ -457,9 +489,6 @@ export default {
                 return navigator.userAgent.match(toMatchItem);
             });
         },
-        getHandleClass() {
-            return this.isMobile() ? '.handle' : false
-        },
         updateEditing(value) {
             this.editing = value
         },
@@ -507,6 +536,8 @@ export default {
                 '/api/v1/label/',
                 { id: label.id, title: label.title }
             );
+
+            this.syncTasks()
         },
         toggleCollapseArchived() {
             this.collapseArchived = !this.collapseArchived

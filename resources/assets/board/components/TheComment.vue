@@ -9,7 +9,7 @@
             :close-on-content-click="false"
         >
             <template v-slot:activator="{ props }">
-                <v-icon size="x-small" color="grey-lighten-1" icon="mdi-dots-vertical" v-bind="props" class="ml-3 handle" @click="showDelete"></v-icon>
+                <v-icon size="small" color="grey-lighten-1" icon="mdi-dots-vertical" v-bind="props" class="ml-3 handle" @click="showDelete"></v-icon>
             </template>
 
             <v-list class="rounded-lg">

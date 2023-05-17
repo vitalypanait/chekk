@@ -1,8 +1,29 @@
 <template>
     <v-sheet class="d-flex align-center ml-14 mt-2 mr-3">
         <div class="me-auto text-body-2" v-html="modelValue.content"></div>
-        <v-icon class="ml-3" icon="mdi-delete" size="x-small" color="grey-lighten-1" v-show="!isConfirmingDelete" @click="showConfirm"></v-icon>
-        <v-icon class="ml-3" icon="mdi-delete-forever" size="x-small" color="red" v-show="isConfirmingDelete" @click="deleteComment(modelValue.id)" @mouseleave="showDelete"></v-icon>
+        <v-menu
+            :open-on-hover="!isMobile"
+            :open-on-click="isMobile"
+            open-delay="50"
+            :transition="false"
+            :close-on-content-click="false"
+        >
+            <template v-slot:activator="{ props }">
+                <v-icon size="x-small" color="grey-lighten-1" icon="mdi-dots-vertical" v-bind="props" class="ml-3 handle" @click="showDelete"></v-icon>
+            </template>
+
+            <v-list class="rounded-lg">
+                <v-list-item value="makeAsTask">
+                    <div @click="makeAsTask">Make as a task</div>
+                </v-list-item>
+                <v-list-item value="delete" v-show="!isConfirmingDelete">
+                    <div @click="showConfirm">Delete</div>
+                </v-list-item>
+                <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
+                    <div @click="deleteComment()" class="text-red">Confirm</div>
+                </v-list-item>
+            </v-list>
+        </v-menu>
     </v-sheet>
 </template>
 
@@ -15,10 +36,11 @@ export default {
             isConfirmingDelete: false,
         }
     },
-    props: ['modelValue', 'cancelDelete'],
+    props: ['modelValue', 'cancelDelete', 'isMobile'],
     emits: [
         'update:modelValue',
         'comment:delete',
+        'comment:makeAsTask',
     ],
     watch: {
         cancelDelete(newValue) {
@@ -29,13 +51,16 @@ export default {
     },
     methods: {
         deleteComment(id) {
-            this.$emit('comment:delete', id)
+            this.$emit('comment:delete', this.modelValue.id)
         },
         showConfirm() {
             this.isConfirmingDelete = true
         },
         showDelete() {
             this.isConfirmingDelete = false
+        },
+        makeAsTask() {
+            this.$emit('comment:makeAsTask', this.modelValue)
         }
     }
 };

@@ -81,7 +81,9 @@
                 <the-comment
                     v-model="modelValue.comments[i]"
                     :cancel-delete="!collapse"
+                    :is-mobile="isMobile"
                     @comment:delete="deleteComment"
+                    @comment:make-as-task="makeAsTask"
                 ></the-comment>
             </div>
         </v-sheet>
@@ -115,6 +117,7 @@ export default {
         'task:archive',
         'comment:add',
         'comment:delete',
+        'comment:makeAsTask',
         'label:add',
         'label:delete'
     ],
@@ -163,6 +166,13 @@ export default {
         deleteComment(id) {
             this.$emit('comment:delete', {
                 id: id,
+                taskId: this.modelValue.id
+            })
+        },
+        makeAsTask(comment) {
+            this.$emit('comment:makeAsTask', {
+                id: comment.id,
+                content: comment.content,
                 taskId: this.modelValue.id
             })
         },

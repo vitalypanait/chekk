@@ -9,7 +9,7 @@
                             <div>
                                 <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
                             </div>
-                            <input placeholder="Type a task" class="the-add-task" v-model="task" @keyup.enter="addTask" @blur="addTask"/>
+                            <input placeholder="Type a task" class="the-add-task" v-model="task" @keyup.enter="addTask($event.target.value)" @blur="addTask($event.target.value)"/>
                         </div>
                         <div class="my-5">
                             <draggable
@@ -33,6 +33,7 @@
                                         @task:archive="archiveTask"
                                         @comment:add="addComment"
                                         @comment:delete="deleteComment"
+                                        @comment:make-as-task="makeAsTask"
                                         @label:add="setLabel"
                                         @label:delete="deleteTaskLabel"
                                     ></the-card>
@@ -275,15 +276,15 @@ export default {
         updateTitle(title) {
             axios.put('/api/v1/board/' + this.board.id, {title: title});
         },
-        addTask(event) {
-            const value = event.target.value.trim()
+        addTask(value) {
+            let title = value.trim()
 
-            if (!value) {
+            if (!title) {
                 return
             }
 
             axios
-                .post('/api/v1/task/', {boardId: this.board.id, title: value})
+                .post('/api/v1/task/', {boardId: this.board.id, title: title})
                 .then(response => {
                     this.board.tasks.unshift(response.data)
                 });
@@ -355,6 +356,19 @@ export default {
                     this.board.tasks.forEach(currentTask => {
                         if (currentTask.id === comment.taskId) {
                             currentTask.comments = currentTask.comments.filter((item) => item.id !== comment.id)
+                        }
+                    })
+                });
+        },
+        makeAsTask(comment) {
+            axios
+                .delete('/api/v1/comment/' + comment.id)
+                .then(response => {
+                    this.board.tasks.forEach(currentTask => {
+                        if (currentTask.id === comment.taskId) {
+                            currentTask.comments = currentTask.comments.filter((item) => item.id !== comment.id)
+
+                            this.addTask(comment.content.replace(/<[^>]*>?/gm, ''))
                         }
                     })
                 });

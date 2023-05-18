@@ -1,12 +1,11 @@
 doctrine:
     dbal:
-        dbname: chekk
-        host: 172.17.0.2
-        port: 5432
-        user: user
-        password: zse4XSQ1
-        driver: pdo_pgsql
-        # url: '%env(resolve:DATABASE_URL)%'
+        dbname: '%env(resolve:DATABASE_NAME)%'
+        host: '%env(resolve:DATABASE_HOST)%'
+        port: '%env(resolve:DATABASE_PORT)%'
+        user: '%env(resolve:DATABASE_USER)%'
+        password: '%env(resolve:DATABASE_PASSWORD)%'
+        driver: '%env(resolve:DATABASE_DRIVER)%'
         charset:  UTF8
         options:
             1002: "SET NAMES 'UTF8'"

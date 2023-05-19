@@ -4,7 +4,7 @@
             <v-container class="mx-auto">
                 <v-row>
                     <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
-                        <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
+                        <the-title v-model="board.title" :is-mobile="isMobile()" @updateTitle="updateTitle"></the-title>
                         <div class="d-flex align-center">
                             <div>
                                 <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
@@ -90,6 +90,7 @@
 
                 <v-list class="rounded-lg" density="compact">
                     <v-list-item
+                        density="compact"
                         v-for="(status, i) in allStatuses"
                         :key="i"
                         :value="status.value"
@@ -100,7 +101,7 @@
                             <span>{{ getStatusCount(status.value) }}</span>
                         </v-sheet>
                     </v-list-item>
-                    <v-list-item value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
+                    <v-list-item density="compact" value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                 </v-list>
             </v-menu>
             <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
@@ -110,6 +111,7 @@
 
                 <v-list class="rounded-lg" density="compact">
                     <v-list-item
+                        density="compact"
                         v-for="(label, i) in labels"
                         :key="i"
                         :value="label.title"
@@ -125,9 +127,9 @@
                             :variant="getLabelVariant(label)"
                         >{{ label.title }} {{ getLabelCount(label) }}</v-chip>
                     </v-list-item>
-                    <v-list-item value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
-                    <v-list-item value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
-                    <v-list-item value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
+                    <v-list-item density="compact" value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
+                    <v-list-item density="compact" value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
+                    <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                 </v-list>
             </v-menu>
             <v-btn value="access">Access</v-btn>

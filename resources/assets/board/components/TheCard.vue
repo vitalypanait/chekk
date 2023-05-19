@@ -1,9 +1,7 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer;">
+    <v-card class="my-2 py-2 rounded-lg" elevation="0" style="cursor: pointer;">
         <v-sheet class="d-flex align-start" :class="isMobile ? '' : 'handle'" @click="toggleCollapse">
-            <div class="ml-3">
-                <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
-            </div>
+            <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
             <the-task-title
                 v-model:title="modelValue.title"
                 v-model:editable="editable"
@@ -12,9 +10,10 @@
             <v-badge
                 v-if="modelValue.comments.length > 0"
                 color="grey-lighten-3"
-                class=" mr-1"
+                class="mr-1"
                 :content="modelValue.comments.length"
                 inline
+                style="margin-top: 2px!important"
             ></v-badge>
             <v-menu
                 :open-on-hover="!isMobile"
@@ -28,20 +27,20 @@
                 </template>
 
                 <v-list class="rounded-lg">
-                    <v-list-item value="edit">
+                    <v-list-item value="edit" density="compact">
                         <div @click="makeEditable">Edit</div>
                     </v-list-item>
-                    <v-list-item value="archive">
+                    <v-list-item value="archive" density="compact">
                         <div @click="archive">Archive</div>
                     </v-list-item>
-                    <v-list-item value="delete" v-show="!isConfirmingDelete">
+                    <v-list-item value="delete" density="compact" v-show="!isConfirmingDelete">
                         <div @click="showConfirm">Delete</div>
                     </v-list-item>
-                    <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
+                    <v-list-item value="confirm" density="compact" v-show="isConfirmingDelete" @mouseleave="showDelete">
                         <div @click="deleteTask" class="text-red">Confirm</div>
                     </v-list-item>
                     <v-divider v-show="labels.length > 0"></v-divider>
-                    <v-list-item v-show="labels.length > 0">
+                    <v-list-item density="compact" v-show="labels.length > 0">
                         <div class="my-2">Labels</div>
                         <v-chip
                             v-for="label in labels"
@@ -211,7 +210,8 @@ export default {
         },
         getLabelVariant(label) {
             return this.currentLabelColors.includes(label.color) ? 'elevated' : 'tonal'
-        }
+        },
+        //border: 1px solid rgba(0, 0, 0, 0.12)
     }
 };
 </script>

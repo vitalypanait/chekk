@@ -48,10 +48,10 @@ export function getNextStatus(status) {
     if (status === STATUS_CREATED) {
         value = STATUS_PROCESSING
     } else if (status === STATUS_PROCESSING) {
-        value = STATUS_PAUSED
-    } else if (status === STATUS_PAUSED) {
         value = STATUS_COMPLETED
     } else if (status === STATUS_COMPLETED) {
+        value = STATUS_PAUSED
+    } else if (status === STATUS_PAUSED) {
         value = STATUS_CREATED
     }
 

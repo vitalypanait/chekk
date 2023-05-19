@@ -13,13 +13,13 @@
             </template>
 
             <v-list class="rounded-lg">
-                <v-list-item value="makeAsTask">
+                <v-list-item density="compact" value="makeAsTask">
                     <div @click="makeAsTask">Make as a task</div>
                 </v-list-item>
-                <v-list-item value="delete" v-show="!isConfirmingDelete">
+                <v-list-item density="compact" value="delete" v-show="!isConfirmingDelete">
                     <div @click="showConfirm">Delete</div>
                 </v-list-item>
-                <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
+                <v-list-item density="compact" value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
                     <div @click="deleteComment()" class="text-red">Confirm</div>
                 </v-list-item>
             </v-list>

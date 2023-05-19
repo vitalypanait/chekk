@@ -1,12 +1,14 @@
 <template>
     <div
-        class="the-title mt-7 mb-12 ml-1"
+        :class="getTitleClass()"
+        class="mt-7 mb-6 ml-1"
         v-show="!isEditable"
         @click="makeEditable"
         style="cursor: pointer"
     >{{ modelValue }}</div>
-    <input placeholder="Type a board title"
-       class="the-title mt-7 mb-12 ml-1"
+    <input placeholder="Title"
+       :class="getTitleClass()"
+       class="mt-7 mb-6 ml-1"
        v-show="isEditable"
        :value="modelValue"
        @input="changeTitle"
@@ -25,7 +27,7 @@ export default {
             editable: false,
         }
     },
-    props: ['modelValue'],
+    props: ['modelValue', 'isMobile'],
     emits: ['update:modelValue', 'updateTitle'],
     computed: {
         isEditable() {
@@ -47,13 +49,27 @@ export default {
         update() {
             this.editable = false;
             this.$emit('updateTitle', this.modelValue);
+        },
+        getTitleClass() {
+            console.log(this.isMobile)
+
+            return this.isMobile ? 'the-title-mobile' : 'the-title'
         }
     }
 };
 </script>
 <style>
     .the-title {
-        font-size: 3rem !important;
+        font-size: 36px !important;
+        line-height: 40px !important;
+        background: #f0f0f0;
+        outline: none;
+        width: 100%;
+    }
+
+    .the-title-mobile {
+        font-size: 28px !important;
+        line-height: 32px !important;
         background: #f0f0f0;
         outline: none;
         width: 100%;

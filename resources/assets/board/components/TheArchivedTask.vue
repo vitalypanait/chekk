@@ -1,9 +1,7 @@
 <template>
-    <v-card class="my-2 py-3 rounded-lg" elevation="0" style="cursor: pointer">
+    <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer">
         <v-sheet class="d-flex align-start" @click="toggleCollapse">
-            <div class="ml-3">
-                <v-icon :icon="selectedIcon" color="grey"></v-icon>
-            </div>
+            <v-icon class="ml-3" :icon="selectedIcon" color="grey"></v-icon>
             <div class="me-auto ml-5 pr-3 text-grey">{{ modelValue.title }}</div>
             <v-badge
                 v-if="modelValue.comments.length > 0"
@@ -11,6 +9,7 @@
                 text-color="grey"
                 :content="modelValue.comments.length"
                 inline
+                style="margin-top: 2px!important"
             ></v-badge>
             <v-menu
                 :open-on-hover="!isMobile"
@@ -24,13 +23,13 @@
                 </template>
 
                 <v-list class="rounded-lg">
-                    <v-list-item value="restore">
+                    <v-list-item value="restore" density="compact">
                         <div @click="restore">Restore</div>
                     </v-list-item>
-                    <v-list-item value="delete" v-show="!isConfirmingDelete">
+                    <v-list-item value="delete" v-show="!isConfirmingDelete" density="compact">
                         <div @click="showConfirm">Delete</div>
                     </v-list-item>
-                    <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete">
+                    <v-list-item value="confirm" v-show="isConfirmingDelete" @mouseleave="showDelete" density="compact">
                         <div @click="deleteTask" class="text-red">Confirm</div>
                     </v-list-item>
                 </v-list>

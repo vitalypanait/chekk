@@ -1,5 +1,5 @@
 <template>
-    <div v-show="!isEditable" class="me-auto ml-5 pr-3">{{ title }}</div>
+    <div v-show="!isEditable" class="the-task-title me-auto ml-5 pr-3">{{ title }}</div>
     <input placeholder="Add a task"
            class="the-task-title ml-5"
            v-show="isEditable"
@@ -43,5 +43,8 @@ export default {
 .the-task-title {
     outline: none;
     width: 100%;
+    font-size: 16px;
+    line-height: 20px;
+    margin-top: 2px;
 }
 </style>

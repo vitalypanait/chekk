@@ -1,5 +1,5 @@
 <template>
-    <v-card class="my-2 py-2 rounded-lg" elevation="0" style="cursor: pointer;">
+    <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer;">
         <v-sheet class="d-flex align-start" :class="isMobile ? '' : 'handle'" @click="toggleCollapse">
             <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
             <the-task-title
@@ -210,8 +210,15 @@ export default {
         },
         getLabelVariant(label) {
             return this.currentLabelColors.includes(label.color) ? 'elevated' : 'tonal'
-        },
-        //border: 1px solid rgba(0, 0, 0, 0.12)
+        }
     }
 };
 </script>
+<style>
+.the-card {
+    border: 1px solid white;
+}
+.the-card:hover {
+    border: 1px solid rgba(0, 0, 0, 0.12)
+}
+</style>

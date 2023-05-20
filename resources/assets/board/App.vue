@@ -569,5 +569,7 @@ export default {
         background: #f0f0f0;
         outline: none;
         width: 100%;
+        font-size: 16px;
+        line-height: 20px;
     }
 </style>

@@ -1,14 +1,14 @@
 <template>
     <div
         :class="getTitleClass()"
-        class="mt-7 mb-6 ml-1"
+        class="mt-7 mb-8 ml-1"
         v-show="!isEditable"
         @click="makeEditable"
         style="cursor: pointer"
     >{{ modelValue }}</div>
     <input placeholder="Title"
        :class="getTitleClass()"
-       class="mt-7 mb-6 ml-1"
+       class="mt-7 mb-8 ml-1"
        v-show="isEditable"
        :value="modelValue"
        @input="changeTitle"

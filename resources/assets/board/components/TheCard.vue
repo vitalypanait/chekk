@@ -1,6 +1,6 @@
 <template>
     <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer;">
-        <v-sheet class="d-flex align-start" :class="isMobile ? '' : 'handle'" @click="toggleCollapse">
+        <v-sheet class="d-flex align-start" :class="isMobile() ? '' : 'handle'" @click="toggleCollapse">
             <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
             <the-task-title
                 v-model:title="modelValue.title"
@@ -16,8 +16,8 @@
                 style="margin-top: 2px!important"
             ></v-badge>
             <v-menu
-                :open-on-hover="!isMobile"
-                :open-on-click="isMobile"
+                :open-on-hover="!isMobile()"
+                :open-on-click="isMobile()"
                 open-delay="50"
                 :transition="false"
                 :close-on-content-click="false"
@@ -80,7 +80,7 @@
                 <the-comment
                     v-model="modelValue.comments[i]"
                     :cancel-delete="!collapse"
-                    :is-mobile="isMobile"
+                    :is-mobile="isMobile()"
                     @comment:delete="deleteComment"
                     @comment:make-as-task="makeAsTask"
                 ></the-comment>
@@ -95,6 +95,7 @@ import TheComment from './TheComment.vue';
 import TheStatus from './TheStatus.vue';
 import TheTaskTitle from './TheTaskTitle.vue';
 import Tiptap from './Tiptap.vue'
+import { mobile } from '../mixins';
 
 export default {
     name: 'TheTask',
@@ -107,7 +108,7 @@ export default {
             isConfirmingDelete: false
         }
     },
-    props: ['modelValue', 'labels', 'collapseTask', 'isMobile'],
+    props: ['modelValue', 'labels', 'collapseTask'],
     emits: [
         'update:modelValue',
         'editing:update',
@@ -120,6 +121,7 @@ export default {
         'label:add',
         'label:delete'
     ],
+    mixins: [mobile],
     watch: {
         editable(newValue, oldValue) {
             this.$emit('editing:update', newValue)

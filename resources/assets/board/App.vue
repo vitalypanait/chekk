@@ -4,7 +4,7 @@
             <v-container class="mx-auto">
                 <v-row>
                     <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
-                        <the-title v-model="board.title" :is-mobile="isMobile()" @updateTitle="updateTitle"></the-title>
+                        <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
                         <div class="d-flex align-center">
                             <div>
                                 <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
@@ -26,7 +26,6 @@
                                         :key="element.id"
                                         :labels="labels"
                                         :collapseTask="collapseTask"
-                                        :isMobile="isMobile()"
                                         @editing:update="updateEditing"
                                         @task:update="updateTask"
                                         @task:delete="deleteTask"
@@ -54,7 +53,6 @@
                                 :key="archivedTask.id"
                                 v-model="filteredArchivedTasks[i]"
                                 :labels="labels"
-                                :isMobile="isMobile()"
                                 @task:delete="deleteArchivedTask"
                                 @task:restore="restoreTask"
                             ></the-archived-task>
@@ -170,6 +168,7 @@ import TheArchivedTask from './components/TheArchivedTask.vue';
 import TheLabel from './components/TheLabel.vue';
 import axios from "axios";
 import draggable from "vuedraggable";
+import { mobile } from "./mixins";
 
 import { getStatuses, getStatusColor } from './utils';
 import TheComment from "./components/TheComment.vue";
@@ -269,6 +268,7 @@ export default {
             return this.labels.length < this.labelColors.length
         }
     },
+    mixins: [mobile],
     methods: {
         getChosenStatusColor(status) {
             return getStatusColor(status);
@@ -528,21 +528,6 @@ export default {
         },
         collapseTasks() {
             this.collapseTask = true
-        },
-        isMobile() {
-            const toMatch = [
-                /Android/i,
-                /webOS/i,
-                /iPhone/i,
-                /iPad/i,
-                /iPod/i,
-                /BlackBerry/i,
-                /Windows Phone/i
-            ];
-
-            return toMatch.some((toMatchItem) => {
-                return navigator.userAgent.match(toMatchItem);
-            });
         },
         updateEditing(value) {
             this.editing = value

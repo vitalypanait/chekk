@@ -20,6 +20,8 @@
 
 <script>
 
+import { mobile } from "../mixins";
+
 export default {
     name: 'TheTitle',
     data() {
@@ -27,8 +29,9 @@ export default {
             editable: false,
         }
     },
-    props: ['modelValue', 'isMobile'],
+    props: ['modelValue'],
     emits: ['update:modelValue', 'updateTitle'],
+    mixins: [mobile],
     computed: {
         isEditable() {
             return this.modelValue.length === 0 || this.editable;
@@ -51,7 +54,7 @@ export default {
             this.$emit('updateTitle', this.modelValue);
         },
         getTitleClass() {
-            return this.isMobile ? 'the-title-mobile' : 'the-title'
+            return this.isMobile() ? 'the-title-mobile' : 'the-title'
         }
     }
 };

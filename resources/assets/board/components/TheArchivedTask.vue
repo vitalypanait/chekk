@@ -12,8 +12,8 @@
                 style="margin-top: 2px!important"
             ></v-badge>
             <v-menu
-                :open-on-hover="!isMobile"
-                :open-on-click="isMobile"
+                :open-on-hover="!isMobile()"
+                :open-on-click="isMobile()"
                 open-delay="50"
                 :transition="false"
                 :close-on-content-click="false"
@@ -59,6 +59,7 @@
 <script>
 
 import { getStatusIcon } from '../utils';
+import { mobile } from "../mixins";
 
 export default {
     name: 'TheArchivedTask',
@@ -68,12 +69,13 @@ export default {
             isConfirmingDelete: false
         }
     },
-    props: ['modelValue', 'labels', 'isMobile'],
+    props: ['modelValue', 'labels'],
     emits: [
         'update:modelValue',
         'task:delete',
         'task:restore',
     ],
+    mixins: [mobile],
     computed: {
         selectedIcon() {
             return getStatusIcon(this.modelValue.status);

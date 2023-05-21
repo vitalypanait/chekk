@@ -102,7 +102,7 @@
                             :value="status.value"
                             @click="updateStatusFilter(status.value)"
                         >
-                            <v-sheet class="d-flex rounded-lg pa-1" :class="getFilterBackground(status)">
+                            <v-sheet class="d-flex rounded-lg py-1 px-2 mr-2" :class="getFilterBackground(status)">
                                 <v-icon :color="getFilterColor(status)" :icon="status.icon" class="mr-1"></v-icon>
                                 <span>{{ getStatusCount(status.value) }}</span>
                             </v-sheet>
@@ -631,5 +631,9 @@ export default {
         justify-content: center;
         transition: inherit;
         width: 100%;
+    }
+
+    .v-menu > .v-overlay__content {
+        flex-direction: row;
     }
 </style>

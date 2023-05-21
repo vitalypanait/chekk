@@ -82,58 +82,83 @@
                 </div>
             </v-container>
         </v-main>
-        <v-bottom-navigation class="main-background" border="false" density="compact" elevation="0">
-            <v-menu open-delay="50" location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
-                <template v-slot:activator="{ props }">
-                    <v-btn value="statuses" v-bind="props">Statuses</v-btn>
-                </template>
+        <div class="the-footer">
+            <div class="the-footer__content">
+                <v-menu open-delay="50" location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+                    <template v-slot:activator="{ props }">
+                        <v-btn value="statuses" v-bind="props" variant="text" rounded="0" class="text-body-2">
+                            <span>Statuses</span>
+                            <v-icon v-for="status in this.filteredStatuses"
+                                icon="mdi-circle-medium"
+                                :color="getChosenStatusColor(status)"
+                                class="mr-n2"
+                            ></v-icon>
+                        </v-btn>
+                    </template>
 
-                <v-list class="rounded-lg" density="compact">
-                    <v-list-item
-                        density="compact"
-                        v-for="(status, i) in allStatuses"
-                        :key="i"
-                        :value="status.value"
-                        @click="updateStatusFilter(status.value)"
-                    >
-                        <v-sheet class="d-flex rounded-lg pa-1" :class="getFilterBackground(status)">
-                            <v-icon :color="getFilterColor(status)" :icon="status.icon" class="mr-1"></v-icon>
-                            <span>{{ getStatusCount(status.value) }}</span>
-                        </v-sheet>
-                    </v-list-item>
-                    <v-list-item density="compact" value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
-                </v-list>
-            </v-menu>
-            <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
-                <template v-slot:activator="{ props }">
-                    <v-btn value="labels" v-bind="props" class="me-auto">Labels</v-btn>
-                </template>
+                    <v-list class="rounded-lg" density="compact">
+                        <v-list-item
+                            density="compact"
+                            v-for="(status, i) in allStatuses"
+                            :key="i"
+                            :value="status.value"
+                            @click="updateStatusFilter(status.value)"
+                        >
+                            <v-sheet class="d-flex rounded-lg pa-1" :class="getFilterBackground(status)">
+                                <v-icon :color="getFilterColor(status)" :icon="status.icon" class="mr-1"></v-icon>
+                                <span>{{ getStatusCount(status.value) }}</span>
+                            </v-sheet>
+                        </v-list-item>
+                        <v-list-item density="compact" value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
+                    </v-list>
+                </v-menu>
+                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+                    <template v-slot:activator="{ props }">
+                        <v-btn value="labels" v-bind="props" class="me-auto text-body-2" variant="text" rounded="0">
+                            Labels
+                            <v-icon v-for="color in this.filteredLabelColors"
+                                icon="mdi-circle-medium"
+                                :color="color"
+                                class="mr-n2"
+                            ></v-icon>
+                        </v-btn>
+                    </template>
 
-                <v-list class="rounded-lg" density="compact">
-                    <v-list-item
-                        density="compact"
-                        v-for="(label, i) in labels"
-                        :key="i"
-                        :value="label.title"
-                        @click="updateLabelFilter(label)"
-                    >
-                        <v-chip
-                            label
-                            class="font-weight-black mx-1"
-                            size="x-small"
-                            :color="label.color"
-                            :value="label.id"
-                            :text-color="getLabelTextColor(label)"
-                            :variant="getLabelVariant(label)"
-                        >{{ label.title }} {{ getLabelCount(label) }}</v-chip>
-                    </v-list-item>
-                    <v-list-item density="compact" value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
-                    <v-list-item density="compact" value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
-                    <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
-                </v-list>
-            </v-menu>
-            <v-btn value="access">Access</v-btn>
-        </v-bottom-navigation>
+                    <v-list class="rounded-lg" density="compact">
+                        <v-list-item
+                            density="compact"
+                            v-for="(label, i) in labels"
+                            :key="i"
+                            :value="label.title"
+                            @click="updateLabelFilter(label)"
+                        >
+                            <v-chip
+                                label
+                                class="font-weight-black mx-1"
+                                size="x-small"
+                                :color="label.color"
+                                :value="label.id"
+                                :text-color="getLabelTextColor(label)"
+                                :variant="getLabelVariant(label)"
+                            >{{ label.title }} {{ getLabelCount(label) }}</v-chip>
+                        </v-list-item>
+                        <v-list-item density="compact" value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
+                        <v-list-item density="compact" value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
+                        <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
+                    </v-list>
+                </v-menu>
+                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+                    <template v-slot:activator="{ props }">
+                        <v-btn value="access" v-bind="props" variant="text" rounded="0" class="text-body-2">Access</v-btn>
+                    </template>
+
+                    <v-list class="rounded-lg" density="compact">
+                        <v-list-item density="compact" value="copyLink" @click="copyLink()">Copy link</v-list-item>
+                    </v-list>
+                </v-menu>
+                <div ref="copyLink" class="hidden"></div>
+            </div>
+        </div>
     </v-app>
 </template>
 
@@ -146,7 +171,7 @@ import TheLabel from './components/TheLabel.vue';
 import axios from "axios";
 import draggable from "vuedraggable";
 
-import { getStatuses } from './utils';
+import { getStatuses, getStatusColor } from './utils';
 import TheComment from "./components/TheComment.vue";
 
 export default {
@@ -211,6 +236,17 @@ export default {
 
             return labelsCount
         },
+        filteredLabelColors() {
+            let colors = []
+
+            this.labels.forEach(label => {
+                if (this.filteredLabels.includes(label.id)) {
+                    colors.push(label.color)
+                }
+            })
+
+            return colors
+        },
         filteredTasks() {
             return this.filterTasks(this.board.tasks)
         },
@@ -234,6 +270,9 @@ export default {
         }
     },
     methods: {
+        getChosenStatusColor(status) {
+            return getStatusColor(status);
+        },
         syncTasks() {
             axios
                 .get('/api/v1/board/' + window.location.pathname.substring(1))
@@ -557,6 +596,22 @@ export default {
         },
         toggleCollapseArchived() {
             this.collapseArchived = !this.collapseArchived
+        },
+        copyLink() {
+            const el = document.createElement('textarea');
+            el.value = window.location.href;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            const selected =  document.getSelection().rangeCount > 0  ? document.getSelection().getRangeAt(0) : false;
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            if (selected) {
+                document.getSelection().removeAllRanges();
+                document.getSelection().addRange(selected);
+            }
         }
     }
 };
@@ -571,5 +626,25 @@ export default {
         width: 100%;
         font-size: 16px;
         line-height: 20px;
+    }
+
+    .the-footer {
+        background: #f0f0f0;
+        bottom: 0px;
+        z-index: 1004;
+        transform: translateY(0%);
+        position: fixed;
+        height: 40px;
+        left: 0px;
+        width: calc((100% - 0px) - 0px);
+    }
+
+    .the-footer__content {
+        display: flex;
+        flex: none;
+        font-size: 0.75rem;
+        justify-content: center;
+        transition: inherit;
+        width: 100%;
     }
 </style>

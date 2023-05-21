@@ -51,8 +51,6 @@ export default {
             this.$emit('updateTitle', this.modelValue);
         },
         getTitleClass() {
-            console.log(this.isMobile)
-
             return this.isMobile ? 'the-title-mobile' : 'the-title'
         }
     }

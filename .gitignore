@@ -14,3 +14,5 @@
 
 /node_modules
 /public/dist
+/public/assets
+/public/manifest.json

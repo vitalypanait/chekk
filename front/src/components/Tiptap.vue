@@ -7,12 +7,16 @@
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
-import StarterKit from '@tiptap/starter-kit'
 import BulletList from "@tiptap/extension-bullet-list";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import Document from "@tiptap/extension-document";
+import ListItem from "@tiptap/extension-list-item";
+import HardBreak from "@tiptap/extension-hard-break";
 
 export default {
     name: 'TipTap',
-    components: {EditorContent, Link},
+    components: {EditorContent, Link, Paragraph, Text, Document, ListItem, HardBreak},
     data() {
         return {
             editor: null,
@@ -39,7 +43,11 @@ export default {
     mounted() {
         this.editor = new Editor({
             extensions: [
-                StarterKit,
+                HardBreak,
+                ListItem,
+                Document,
+                Paragraph,
+                Text,
                 Link.configure({
                     openOnClick: false,
                 }),

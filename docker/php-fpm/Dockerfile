@@ -21,7 +21,7 @@ WORKDIR /var/www
 ARG DB_HOST=db
 ENV DB_HOST=$DB_HOST
 
-CMD npm i && \
+CMD cd front && npm i && \
     npm run build ; \
     composer i -o ; \
     wait-for-it $DB_HOST:5432 -- bin/console --no-interaction doctrine:migrations:migrate ; php-fpm

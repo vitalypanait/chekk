@@ -20,6 +20,12 @@ class Board implements \JsonSerializable
     )]
     private string $title;
 
+    #[OA\Property(
+        description: 'Board type',
+        example: 'task'
+    )]
+    private string $type;
+
     /** @var Task[] */
     private array $tasks;
 

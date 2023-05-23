@@ -8,7 +8,8 @@ class BoardTitleUpdateCommand
 {
     public function __construct(
         private string $id,
-        private string $title
+        private string $title,
+        private string $type
     ) {}
 
     public function getId(): string
@@ -19,5 +20,10 @@ class BoardTitleUpdateCommand
     public function getTitle(): string
     {
         return $this->title;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 }

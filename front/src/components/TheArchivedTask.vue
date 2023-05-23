@@ -1,7 +1,8 @@
 <template>
     <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer">
         <v-sheet class="d-flex align-start" @click="toggleCollapse">
-            <v-icon class="ml-3" :icon="selectedIcon" color="grey"></v-icon>
+            <v-icon v-show="type === 'task'" class="ml-3" :icon="selectedIcon" color="grey"></v-icon>
+            <div v-show="type === 'list'" class="ml-4 font-weight-bold">{{ index + 1}}</div>
             <div class="me-auto ml-5 pr-3 text-grey">{{ modelValue.title }}</div>
             <v-badge
                 v-if="modelValue.comments.length > 0"
@@ -60,16 +61,18 @@
 
 import { getStatusIcon } from '../utils';
 import { mobile } from "../mixins";
+import TheStatus from "./TheStatus.vue";
 
 export default {
     name: 'TheArchivedTask',
+  components: {TheStatus},
     data() {
         return {
             collapse: false,
             isConfirmingDelete: false
         }
     },
-    props: ['modelValue', 'labels'],
+    props: ['modelValue', 'labels', 'type', 'index'],
     emits: [
         'update:modelValue',
         'task:delete',

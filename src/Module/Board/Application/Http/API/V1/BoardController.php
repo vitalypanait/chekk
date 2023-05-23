@@ -115,7 +115,7 @@ class BoardController extends AbstractController
             return new Response('', 404);
         }
 
-        $this->commandBus->execute(new BoardTitleUpdateCommand($id, $request->getTitle()));
+        $this->commandBus->execute(new BoardTitleUpdateCommand($id, $request->getTitle(), $request->getType()));
 
         return $this->json($this->getFormattedBoard($board));
     }
@@ -185,6 +185,7 @@ class BoardController extends AbstractController
         return [
             'id' => $board->getId(),
             'title' => $board->getTitle() === null ? '' : $board->getTitle(),
+            'type' => $board->getType(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks)
         ];

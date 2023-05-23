@@ -1,7 +1,8 @@
 <template>
     <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer;">
         <v-sheet class="d-flex align-start" :class="isMobile() ? '' : 'handle'" @click="toggleCollapse">
-            <the-status v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
+            <the-status v-show="type === 'task'" class="ml-3" v-model="modelValue.status" @update:modelValue="updateTask"></the-status>
+            <div v-show="type === 'list'" class="ml-4 font-weight-bold">{{ index + 1}}</div>
             <the-task-title
                 v-model:title="modelValue.title"
                 v-model:editable="editable"
@@ -108,7 +109,7 @@ export default {
             isConfirmingDelete: false
         }
     },
-    props: ['modelValue', 'labels', 'collapseTask'],
+    props: ['modelValue', 'labels', 'collapseTask', 'type', 'index'],
     emits: [
         'update:modelValue',
         'editing:update',

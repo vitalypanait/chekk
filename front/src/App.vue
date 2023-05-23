@@ -20,12 +20,14 @@
                                 item-key="id"
                                 handle=".handle"
                             >
-                                <template #item="{ element}">
+                                <template #item="{index, element}">
                                     <the-card
                                         :model-value="element"
                                         :key="element.id"
                                         :labels="labels"
                                         :collapseTask="collapseTask"
+                                        :type="board.type"
+                                        :index="index"
                                         @editing:update="updateEditing"
                                         @task:update="updateTask"
                                         @task:delete="deleteTask"
@@ -53,6 +55,8 @@
                                 :key="archivedTask.id"
                                 v-model="filteredArchivedTasks[i]"
                                 :labels="labels"
+                                :type="board.type"
+                                :index="index"
                                 @task:delete="deleteArchivedTask"
                                 @task:restore="restoreTask"
                             ></the-archived-task>
@@ -84,7 +88,7 @@
             <div class="the-footer__content">
                 <v-menu open-delay="50" location="top" class="rounded-xl" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                     <template v-slot:activator="{ props }">
-                        <v-btn value="statuses" v-bind="props" variant="text" rounded="0" class="text-body-2">
+                        <v-btn v-show="isBoardHasTypeTask" value="statuses" v-bind="props" variant="text" rounded="0" class="text-body-2">
                             <span>Statuses</span>
                             <v-icon v-for="status in this.filteredStatuses"
                                 icon="mdi-circle-medium"
@@ -145,6 +149,22 @@
                         <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                     </v-list>
                 </v-menu>
+                <v-menu open-delay="50" location="top" class="rounded-lg" :close-on-content-click="false" :transition="false">
+                    <template v-slot:activator="{ props }">
+                        <v-btn value="settings" v-bind="props" variant="text" rounded="0" class="text-body-2">Settings</v-btn>
+                    </template>
+
+                    <v-list class="rounded-lg" density="compact">
+                        <v-list-item density="compact" color="grey">Show as</v-list-item>
+                        <v-list-item density="compact">
+                            <div class="d-flex">
+                                <v-sheet border @click="updateType('task')" :class="board.type === 'task' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-s-lg" style="cursor: pointer"><v-icon icon="mdi-circle-outline"></v-icon></v-sheet>
+                                <v-sheet border @click="updateType('list')" :class="board.type === 'list' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1"><v-icon icon="mdi-format-list-numbered" style="cursor: pointer"></v-icon></v-sheet>
+                                <v-sheet border @click="updateType('content')" :class="board.type === 'content' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-e-lg"><v-icon icon="mdi-text-long" style="cursor: pointer"></v-icon></v-sheet>
+                            </div>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
                 <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                     <template v-slot:activator="{ props }">
                         <v-btn value="access" v-bind="props" variant="text" rounded="0" class="text-body-2">Access</v-btn>
@@ -178,7 +198,7 @@ export default {
     components: {TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
     data() {
         return {
-            board: {id: '', title: '', tasks: [], archivedTasks: []},
+            board: {id: '', title: '', type: '', tasks: [], archivedTasks: []},
             labelDialog: false,
             labels: [],
             labelColors: [
@@ -266,7 +286,10 @@ export default {
         },
         isShowAddLabels() {
             return this.labels.length < this.labelColors.length
-        }
+        },
+        isBoardHasTypeTask() {
+            return this.board.type === 'task';
+        },
     },
     mixins: [mobile],
     methods: {
@@ -278,7 +301,8 @@ export default {
                 .get('/api/v1/board/' + window.location.pathname.substring(1))
                 .then(response => {
                     this.board.id = response.data.id;
-                    this.board.title = response.data.title;
+                    this.board.title = response.data.title
+                    this.board.type = response.data.type
                     this.board.tasks = response.data.tasks
                     this.board.archivedTasks = response.data.archivedTasks
                 });
@@ -315,7 +339,7 @@ export default {
             return result
         },
         updateTitle(title) {
-            axios.put('/api/v1/board/' + this.board.id, {title: title});
+            axios.put('/api/v1/board/' + this.board.id, {title: title, type: this.board.type});
         },
         addTask(value) {
             let title = value.trim()
@@ -597,6 +621,10 @@ export default {
                 document.getSelection().removeAllRanges();
                 document.getSelection().addRange(selected);
             }
+        },
+        updateType(type) {
+          this.board.type = type;
+            axios.put('/api/v1/board/' + this.board.id, {title: this.board.title, type: type});
         }
     }
 };

@@ -1,5 +1,5 @@
 <template>
-    <v-icon class="ml-3" :icon="selectedIcon" :color="selectedColor" @click.stop="changeStatus" style="cursor: pointer"></v-icon>
+    <v-icon :icon="selectedIcon" :color="selectedColor" @click.stop="changeStatus" style="cursor: pointer"></v-icon>
 </template>
 
 <script>

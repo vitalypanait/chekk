@@ -16,5 +16,6 @@ class BoardTitleUpdateHandler implements CommandHandler
         $board = $this->boardRepository->getById($command->getId());
 
         $board->updateTitle($command->getTitle());
+        $board->updateType($command->getType());
     }
 }

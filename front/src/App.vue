@@ -158,9 +158,9 @@
                         <v-list-item density="compact" class="text-grey">Show as</v-list-item>
                         <v-list-item density="compact">
                             <div class="d-flex">
-                                <v-sheet border @click="updateType('task')" :class="board.type === 'task' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-s-lg" style="cursor: pointer"><v-icon icon="mdi-circle-outline"></v-icon></v-sheet>
-                                <v-sheet border @click="updateType('list')" :class="board.type === 'list' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1"><v-icon icon="mdi-format-list-numbered" style="cursor: pointer"></v-icon></v-sheet>
-                                <v-sheet border @click="updateType('content')" :class="board.type === 'content' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-e-lg"><v-icon icon="mdi-text-long" style="cursor: pointer"></v-icon></v-sheet>
+                                <v-sheet border @click="updateType('task')" :class="board.type === 'task' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-s-lg" style="cursor: pointer"><v-icon icon="mdi-circle-outline" size="small"></v-icon></v-sheet>
+                                <v-sheet border @click="updateType('list')" :class="board.type === 'list' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1"><v-icon icon="mdi-format-list-numbered" style="cursor: pointer" size="small"></v-icon></v-sheet>
+                                <v-sheet border @click="updateType('content')" :class="board.type === 'content' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-e-lg"><v-icon icon="mdi-text-long" style="cursor: pointer" size="small"></v-icon></v-sheet>
                             </div>
                         </v-list-item>
                     </v-list>

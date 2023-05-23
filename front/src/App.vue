@@ -149,13 +149,13 @@
                         <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                     </v-list>
                 </v-menu>
-                <v-menu open-delay="50" location="top" class="rounded-lg" :close-on-content-click="false" :transition="false">
+                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                     <template v-slot:activator="{ props }">
                         <v-btn value="settings" v-bind="props" variant="text" rounded="0" class="text-body-2">Settings</v-btn>
                     </template>
 
                     <v-list class="rounded-lg" density="compact">
-                        <v-list-item density="compact" color="grey">Show as</v-list-item>
+                        <v-list-item density="compact" class="text-grey">Show as</v-list-item>
                         <v-list-item density="compact">
                             <div class="d-flex">
                                 <v-sheet border @click="updateType('task')" :class="board.type === 'task' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-s-lg" style="cursor: pointer"><v-icon icon="mdi-circle-outline"></v-icon></v-sheet>

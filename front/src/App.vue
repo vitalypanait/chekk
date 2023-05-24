@@ -468,10 +468,10 @@ export default {
         },
         getLabelVariant(label) {
             if (this.filteredLabels.includes(label.id)) {
-                return 'elevated'
+                return 'tonal'
             }
 
-            return 'tonal'
+            return 'outlined'
         },
         getLabelTextColor(label) {
             if (this.filteredLabels.includes(label.id)) {

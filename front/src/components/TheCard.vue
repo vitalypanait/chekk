@@ -232,7 +232,7 @@ export default {
       this.$emit('task:archive', this.modelValue)
     },
     getLabelVariant(label) {
-      return this.currentLabelColors.includes(label.color) ? 'elevated' : 'tonal'
+      return this.currentLabelColors.includes(label.color) ? 'tonal' : 'outlined'
     },
     getMarginDisplay() {
       if (isTaskDisplay(this.display) || isContentDisplay(this.display)) {

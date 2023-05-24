@@ -19,12 +19,12 @@ class BoardUpdateRequest implements IdentifierInterface
         description: 'Type of the board',
         example: 'task'
     )]
-    private string $type;
+    private string $display;
 
-    public function __construct(string $title, string $type)
+    public function __construct(string $title, string $display)
     {
         $this->title = $title;
-        $this->type = $type;
+        $this->display = $display;
     }
 
     public function getTitle(): string
@@ -32,8 +32,8 @@ class BoardUpdateRequest implements IdentifierInterface
         return $this->title;
     }
 
-    public function getType(): string
+    public function getDisplay(): string
     {
-        return $this->type;
+        return $this->display;
     }
 }

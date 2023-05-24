@@ -11,16 +11,16 @@ final class Version20230523144452 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add type to a board';
+        return 'Add display to a board';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE boards ADD type VARCHAR(50) NOT NULL DEFAULT \'task\'');
+        $this->addSql('ALTER TABLE boards ADD display VARCHAR(50) NOT NULL DEFAULT \'task\'');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE boards DROP type');
+        $this->addSql('ALTER TABLE boards DROP display');
     }
 }

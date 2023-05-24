@@ -8,7 +8,7 @@ use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
 use App\Module\Board\Application\Http\API\V1\Request\BoardUpdateRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
-use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardTitleUpdateCommand;
+use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
 use App\Module\Board\Domain\Entity\Board;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
@@ -115,7 +115,7 @@ class BoardController extends AbstractController
             return new Response('', 404);
         }
 
-        $this->commandBus->execute(new BoardTitleUpdateCommand($id, $request->getTitle(), $request->getType()));
+        $this->commandBus->execute(new BoardUpdateCommand($id, $request->getTitle(), $request->getDisplay()));
 
         return $this->json($this->getFormattedBoard($board));
     }
@@ -185,7 +185,7 @@ class BoardController extends AbstractController
         return [
             'id' => $board->getId(),
             'title' => $board->getTitle() === null ? '' : $board->getTitle(),
-            'type' => $board->getType(),
+            'display' => $board->getDisplay(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks)
         ];

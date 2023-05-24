@@ -6,7 +6,7 @@
     <entity name="App\Module\Board\Domain\Entity\Board" table="boards">
         <id name="id" type="uuid" column="id" />
         <field name="title" />
-        <field name="type" length="50" />
+        <field name="display" length="50" />
         <field name="createdAt" type="datetime">
             <gedmo:timestampable on="create" />
         </field>

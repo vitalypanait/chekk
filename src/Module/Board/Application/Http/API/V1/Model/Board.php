@@ -21,10 +21,10 @@ class Board implements \JsonSerializable
     private string $title;
 
     #[OA\Property(
-        description: 'Board type',
+        description: 'Board display',
         example: 'task'
     )]
-    private string $type;
+    private string $display;
 
     /** @var Task[] */
     private array $tasks;
@@ -32,10 +32,11 @@ class Board implements \JsonSerializable
     /**
      * @param Task[] $tasks
      */
-    public function __construct(string $id, string $title, array $tasks)
+    public function __construct(string $id, string $title, string $display, array $tasks)
     {
         $this->id = $id;
         $this->title = $title;
+        $this->display = $display;
         $this->tasks = $tasks;
     }
 
@@ -44,6 +45,7 @@ class Board implements \JsonSerializable
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'display' => $this->display,
             'tasks' => array_map(fn(Task $task) => $task->jsonSerialize(), $this->tasks)
         ];
     }
@@ -61,5 +63,10 @@ class Board implements \JsonSerializable
     public function getTasks(): array
     {
         return $this->tasks;
+    }
+
+    public function getDisplay(): string
+    {
+        return $this->display;
     }
 }

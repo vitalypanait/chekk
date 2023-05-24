@@ -26,7 +26,7 @@
                                         :key="element.id"
                                         :labels="labels"
                                         :collapseTask="collapseTask"
-                                        :type="board.type"
+                                        :display="board.display"
                                         :index="index"
                                         @editing:update="updateEditing"
                                         @task:update="updateTask"
@@ -55,7 +55,7 @@
                                 :key="archivedTask.id"
                                 v-model="filteredArchivedTasks[i]"
                                 :labels="labels"
-                                :type="board.type"
+                                :display="board.display"
                                 :index="index"
                                 @task:delete="deleteArchivedTask"
                                 @task:restore="restoreTask"
@@ -149,22 +149,7 @@
                         <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                     </v-list>
                 </v-menu>
-                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
-                    <template v-slot:activator="{ props }">
-                        <v-btn value="settings" v-bind="props" variant="text" rounded="0" class="text-body-2">Settings</v-btn>
-                    </template>
-
-                    <v-list class="rounded-lg" density="compact">
-                        <v-list-item density="compact" class="text-grey">Show as</v-list-item>
-                        <v-list-item density="compact">
-                            <div class="d-flex">
-                                <v-sheet border @click="updateType('task')" :class="board.type === 'task' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-s-lg" style="cursor: pointer"><v-icon icon="mdi-circle-outline" size="small"></v-icon></v-sheet>
-                                <v-sheet border @click="updateType('list')" :class="board.type === 'list' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1"><v-icon icon="mdi-format-list-numbered" style="cursor: pointer" size="small"></v-icon></v-sheet>
-                                <v-sheet border @click="updateType('content')" :class="board.type === 'content' ? 'bg-grey-lighten-3' : ''" class="px-1 py-1 rounded-e-lg"><v-icon icon="mdi-text-long" style="cursor: pointer" size="small"></v-icon></v-sheet>
-                            </div>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
+                <the-settings v-model:display="board.display" @update:display="updateDisplay"></the-settings>
                 <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                     <template v-slot:activator="{ props }">
                         <v-btn value="access" v-bind="props" variant="text" rounded="0" class="text-body-2">Access</v-btn>
@@ -191,14 +176,16 @@ import draggable from "vuedraggable";
 import { mobile } from "./mixins";
 
 import { getStatuses, getStatusColor } from './utils';
+import { DISPLAY_TASK } from './models';
 import TheComment from "./components/TheComment.vue";
+import TheSettings from "./components/menu/TheSettings.vue";
 
 export default {
     name: "App",
-    components: {TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
+    components: {TheSettings, TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
     data() {
         return {
-            board: {id: '', title: '', type: '', tasks: [], archivedTasks: []},
+            board: {id: '', title: '', display: '', tasks: [], archivedTasks: []},
             labelDialog: false,
             labels: [],
             labelColors: [
@@ -288,7 +275,7 @@ export default {
             return this.labels.length < this.labelColors.length
         },
         isBoardHasTypeTask() {
-            return this.board.type === 'task';
+            return this.board.display === DISPLAY_TASK;
         },
     },
     mixins: [mobile],
@@ -302,7 +289,7 @@ export default {
                 .then(response => {
                     this.board.id = response.data.id;
                     this.board.title = response.data.title
-                    this.board.type = response.data.type
+                    this.board.display = response.data.display
                     this.board.tasks = response.data.tasks
                     this.board.archivedTasks = response.data.archivedTasks
                 });
@@ -339,7 +326,7 @@ export default {
             return result
         },
         updateTitle(title) {
-            axios.put('/api/v1/board/' + this.board.id, {title: title, type: this.board.type});
+            axios.put('/api/v1/board/' + this.board.id, {title: title, display: this.board.display});
         },
         addTask(value) {
             let title = value.trim()
@@ -622,9 +609,9 @@ export default {
                 document.getSelection().addRange(selected);
             }
         },
-        updateType(type) {
-          this.board.type = type;
-            axios.put('/api/v1/board/' + this.board.id, {title: this.board.title, type: type});
+        updateDisplay(display) {
+          this.board.display = display;
+            axios.put('/api/v1/board/' + this.board.id, {title: this.board.title, display: display});
         }
     }
 };

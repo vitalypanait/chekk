@@ -1,8 +1,8 @@
 <template>
     <v-card class="my-2 py-2 rounded-lg the-card" elevation="0" style="cursor: pointer">
         <v-sheet class="d-flex align-start" @click="toggleCollapse">
-            <v-icon v-show="type === 'task'" class="ml-3" :icon="selectedIcon" color="grey"></v-icon>
-            <div v-show="type === 'list'" class="ml-4 font-weight-bold">{{ index + 1}}</div>
+            <v-icon v-show="display === 'task'" class="ml-3" :icon="selectedIcon" color="grey"></v-icon>
+            <div v-show="display === 'list'" class="ml-4 font-weight-bold">{{ index + 1}}</div>
             <div class="me-auto ml-5 pr-3 text-grey">{{ modelValue.title }}</div>
             <v-badge
                 v-if="modelValue.comments.length > 0"
@@ -72,7 +72,7 @@ export default {
             isConfirmingDelete: false
         }
     },
-    props: ['modelValue', 'labels', 'type', 'index'],
+    props: ['modelValue', 'labels', 'display', 'index'],
     emits: [
         'update:modelValue',
         'task:delete',

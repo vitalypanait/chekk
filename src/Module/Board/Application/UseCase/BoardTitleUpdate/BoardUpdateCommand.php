@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\UseCase\BoardTitleUpdate;
 
-class BoardTitleUpdateCommand
+class BoardUpdateCommand
 {
     public function __construct(
         private string $id,
         private string $title,
-        private string $type
+        private string $display
     ) {}
 
     public function getId(): string
@@ -22,8 +22,8 @@ class BoardTitleUpdateCommand
         return $this->title;
     }
 
-    public function getType(): string
+    public function getDisplay(): string
     {
-        return $this->type;
+        return $this->display;
     }
 }

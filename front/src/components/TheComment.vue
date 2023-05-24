@@ -1,5 +1,5 @@
 <template>
-    <v-sheet class="d-flex align-center ml-14 mt-2 mr-3">
+    <v-sheet>
         <div class="me-auto text-body-2" v-html="modelValue.content"></div>
         <v-menu
             :open-on-hover="!isMobile"

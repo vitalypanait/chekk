@@ -14,20 +14,20 @@ class Board
 {
     use Timestamped;
 
-    public const TYPE_TASK = 'task';
-    public const TYPE_LIST = 'list';
-    public const TYPE_CONTENT = 'content';
+    public const DISPLAY_TASK = 'task';
+    public const DISPLAY_LIST = 'list';
+    public const DISPLAY_CONTENT = 'content';
 
     private UuidInterface $id;
 
     private ?string $title = null;
 
-    private string $type;
+    private string $display;
 
     public function __construct()
     {
         $this->id = Uuid::uuid4();
-        $this->type = self::TYPE_TASK;
+        $this->display = self::DISPLAY_TASK;
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
     }
@@ -47,17 +47,17 @@ class Board
         return $this->title;
     }
 
-    public function getType(): string
+    public function getDisplay(): string
     {
-        return $this->type;
+        return $this->display;
     }
 
-    public function updateType(string $type): void
+    public function updateDisplay(string $display): void
     {
-        if (! in_array($type, [self::TYPE_TASK, self::TYPE_CONTENT, self::TYPE_LIST])) {
-            throw new DomainException(sprintf('Undefined type %s', $type));
+        if (! in_array($display, [self::DISPLAY_TASK, self::DISPLAY_CONTENT, self::DISPLAY_LIST])) {
+            throw new DomainException(sprintf('Undefined type %s', $display));
         }
 
-        $this->type = $type;
+        $this->display = $display;
     }
 }

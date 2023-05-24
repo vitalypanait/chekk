@@ -176,7 +176,7 @@ import draggable from "vuedraggable";
 import { mobile } from "./mixins";
 
 import { getStatuses, getStatusColor } from './utils';
-import { DISPLAY_TASK } from './models';
+import {DISPLAY_TASK, isTaskDisplay} from './models';
 import TheComment from "./components/TheComment.vue";
 import TheSettings from "./components/menu/TheSettings.vue";
 
@@ -611,7 +611,13 @@ export default {
         },
         updateDisplay(display) {
           this.board.display = display;
-            axios.put('/api/v1/board/' + this.board.id, {title: this.board.title, display: display});
+
+          if (! isTaskDisplay(display)) {
+            this.filteredStatuses = [];
+            this.filteredLabels = [];
+          }
+
+          axios.put('/api/v1/board/' + this.board.id, {title: this.board.title, display: display});
         }
     }
 };

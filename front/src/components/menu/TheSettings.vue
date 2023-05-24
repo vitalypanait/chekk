@@ -3,8 +3,6 @@
       open-delay="50"
       location="top"
       class="rounded-lg"
-      :open-on-hover="!isMobile()"
-      :open-on-click="isMobile()"
       :close-on-content-click="false"
       :transition="false"
   >
@@ -15,7 +13,7 @@
     <v-list class="rounded-lg" density="compact">
       <v-list-item density="compact" class="text-grey">Show as</v-list-item>
       <v-list-item density="compact">
-        <div class="d-flex">
+        <div class="d-flex align-center" style="line-height: 20px">
           <v-sheet
               border
               @click="updateDisplayToTask()"

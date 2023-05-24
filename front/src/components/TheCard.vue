@@ -3,13 +3,13 @@
     <v-sheet class="d-flex align-start" :class="isMobile() ? '' : 'handle'" @click="toggleCollapse">
       <the-status
           v-if="isTaskDisplay(display)"
-          :class="getMarginDisplay()"
+          :class="getMarginDisplay(display)"
           v-model="modelValue.status"
           @update:modelValue="updateTask"
       ></the-status>
-      <v-sheet v-if="isListDisplay(display)" :class="getMarginDisplay()" class="font-weight-bold" min-width="28">{{ index + 1 }}</v-sheet>
+      <v-sheet v-if="isListDisplay(display)" :class="getMarginDisplay(display)" class="font-weight-bold" min-width="28">{{ index + 1 }}</v-sheet>
       <the-task-title
-          :class="getTitleMarginDisplay()"
+          :class="getTitleMarginDisplay(display)"
           class="the-task-title"
           v-model:title="modelValue.title"
           v-model:editable="editable"
@@ -65,7 +65,7 @@
         </v-list>
       </v-menu>
     </v-sheet>
-    <v-sheet :class="getLabelMarginDisplay()" class="mt-1" v-if="modelValue.labels.length > 0" @click="toggleCollapse">
+    <v-sheet :class="getLabelMarginDisplay(display)" class="mt-1" v-if="modelValue.labels.length > 0" @click="toggleCollapse">
       <div>
         <v-chip
             v-for="label in modelValue.labels"
@@ -82,7 +82,7 @@
     <v-sheet v-show="collapse">
       <tiptap
           v-model="comment"
-          :class="getEditorMarginDisplay()"
+          :class="getEditorMarginDisplay(display)"
           class="my-4 mr-10 text-body-2"
           @update:content="addComment"
       />
@@ -94,7 +94,7 @@
             :is-mobile="isMobile()"
             @comment:delete="deleteComment"
             @comment:make-as-task="makeAsTask"
-            :class="getCommentMarginDisplay()"
+            :class="getCommentMarginDisplay(display)"
             class="d-flex align-center mt-2 mr-3"
         ></the-comment>
       </div>
@@ -108,7 +108,7 @@ import TheComment from './TheComment.vue';
 import TheStatus from './TheStatus.vue';
 import TheTaskTitle from './TheTaskTitle.vue';
 import Tiptap from './Tiptap.vue'
-import {mobile} from '../mixins';
+import {mobile, display} from '../mixins';
 import {
   isListDisplay,
   isTaskDisplay,
@@ -139,7 +139,7 @@ export default {
     'label:add',
     'label:delete'
   ],
-  mixins: [mobile],
+  mixins: [mobile, display],
   watch: {
     editable(newValue, oldValue) {
       this.$emit('editing:update', newValue)
@@ -233,41 +233,6 @@ export default {
     },
     getLabelVariant(label) {
       return this.currentLabelColors.includes(label.color) ? 'tonal' : 'outlined'
-    },
-    getMarginDisplay() {
-      if (isTaskDisplay(this.display) || isContentDisplay(this.display)) {
-        return 'ml-3'
-      } else if (isListDisplay(this.display)) {
-        return 'ml-4'
-      }
-    },
-    getTitleMarginDisplay() {
-      if (isTaskDisplay(this.display)) {
-        return 'ml-5'
-      } else if (isListDisplay(this.display) || isContentDisplay(this.display)) {
-        return 'ml-3'
-      }
-    },
-    getLabelMarginDisplay() {
-      if (isTaskDisplay(this.display) || isListDisplay(this.display)) {
-        return 'ml-13'
-      } else if (isContentDisplay(this.display)) {
-        return 'ml-2'
-      }
-    },
-    getEditorMarginDisplay() {
-      if (isTaskDisplay(this.display) || isListDisplay(this.display)) {
-        return 'ml-14'
-      } else if (isContentDisplay(this.display)) {
-        return 'ml-3'
-      }
-    },
-    getCommentMarginDisplay() {
-      if (isTaskDisplay(this.display) || isListDisplay(this.display)) {
-        return 'ml-14'
-      } else if (isContentDisplay(this.display)) {
-        return 'ml-3'
-      }
     }
   }
 };

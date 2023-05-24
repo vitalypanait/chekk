@@ -56,7 +56,7 @@
                                 v-model="filteredArchivedTasks[i]"
                                 :labels="labels"
                                 :display="board.display"
-                                :index="index"
+                                :index="i"
                                 @task:delete="deleteArchivedTask"
                                 @task:restore="restoreTask"
                             ></the-archived-task>

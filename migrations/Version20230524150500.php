@@ -20,7 +20,6 @@ final class Version20230524150500 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('ALTER TABLE boards ADD read_only_id UUID DEFAULT NULL');
-        $this->addSql('COMMENT ON COLUMN boards.readonly_id IS \'(DC2Type:uuid)\'');
     }
 
     public function down(Schema $schema): void

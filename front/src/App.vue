@@ -14,7 +14,7 @@
                         <div class="my-5">
                             <draggable
                                 :list="filteredTasks"
-                                :disabled="!isDraggable || !board.readOnly"
+                                :disabled="!isDraggable || board.readOnly"
                                 @end="updatePositions"
                                 @start="collapseTasks"
                                 item-key="id"
@@ -58,6 +58,7 @@
                                 :labels="labels"
                                 :display="board.display"
                                 :index="i"
+                                :readOnly="board.readOnly"
                                 @task:delete="deleteArchivedTask"
                                 @task:restore="restoreTask"
                             ></the-archived-task>

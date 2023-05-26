@@ -20,7 +20,7 @@
           :close-on-content-click="false"
       >
         <template v-slot:activator="{ props }">
-          <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click="showDelete"></v-icon>
+          <v-icon v-if="readOnly" icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click="showDelete"></v-icon>
         </template>
 
         <v-list class="rounded-lg">
@@ -83,7 +83,7 @@ export default {
       isConfirmingDelete: false
     }
   },
-  props: ['modelValue', 'labels', 'display', 'index'],
+  props: ['modelValue', 'labels', 'display', 'index', 'readOnly'],
   emits: [
     'update:modelValue',
     'task:delete',

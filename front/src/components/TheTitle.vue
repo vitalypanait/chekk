@@ -29,7 +29,7 @@ export default {
             editable: false,
         }
     },
-    props: ['modelValue'],
+    props: ['modelValue', 'readOnly'],
     emits: ['update:modelValue', 'updateTitle'],
     mixins: [mobile],
     computed: {
@@ -43,6 +43,10 @@ export default {
             this.$emit('update:modelValue', event.target.value)
         },
         makeEditable() {
+            if (this.readOnly) {
+              return;
+            }
+
             this.editable = true;
 
             this.$nextTick(() => {

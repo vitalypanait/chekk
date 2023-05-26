@@ -13,5 +13,7 @@ interface BoardRepository
 
     public function findById(string $id): ?Board;
 
+    public function findReadOnlyById(string $id): ?Board;
+
     public function getById(string $id): Board;
 }

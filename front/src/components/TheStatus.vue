@@ -7,7 +7,7 @@ import { getStatusColor, getStatusIcon, getNextStatus } from '../utils';
 
 export default {
     name: 'TheStatus',
-    props: ['modelValue'],
+    props: ['modelValue', 'readOnly'],
     emits: ['update:modelValue'],
     computed: {
         selectedIcon() {
@@ -19,7 +19,11 @@ export default {
     },
     methods: {
         changeStatus() {
-            this.$emit('update:modelValue', getNextStatus(this.modelValue));
+          if (this.readOnly) {
+            return;
+          }
+
+          this.$emit('update:modelValue', getNextStatus(this.modelValue));
         }
     }
 };

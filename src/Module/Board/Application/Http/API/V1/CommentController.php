@@ -10,6 +10,7 @@ use App\Module\Board\Application\UseCase\CommentCreate\CommentCreateCommand;
 use App\Module\Board\Application\UseCase\CommentDelete\CommentDeleteCommand;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
+use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
@@ -20,9 +21,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class CommentController extends AbstractController
 {
     public function __construct(
-        private readonly TaskRepository    $taskRepository,
-        private readonly CommandBus        $commandBus,
-        private readonly CommentRepository $commentRepository
+        private readonly TaskRepository      $taskRepository,
+        private readonly CommandBus          $commandBus,
+        private readonly CommentRepository   $commentRepository,
+        private readonly ReadOnlyBoardKeeper $boardKeeper
     ) {}
 
     #[Route(
@@ -38,10 +40,14 @@ class CommentController extends AbstractController
     )]
     public function create(CommentCreateRequest $request): Response
     {
-        $board = $this->taskRepository->findById($request->getTaskId());
+        $task = $this->taskRepository->findById($request->getTaskId());
 
-        if ($board === null) {
+        if ($task === null) {
             return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($task->getBoard())) {
+            return new Response('No access to create a comment', 403);
         }
 
         $command = new CommentCreateCommand($request->getTaskId(), $request->getContent());
@@ -64,6 +70,10 @@ class CommentController extends AbstractController
 
         if ($comment === null) {
             return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($comment->getTask()->getBoard())) {
+            return new Response('No access to delete the comment', 403);
         }
 
         $command = new CommentDeleteCommand($id);

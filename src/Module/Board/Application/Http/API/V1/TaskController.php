@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\Http\API\V1;
 
-use App\Module\Board\Application\Http\API\V1\Model\Comment;
 use App\Module\Board\Application\Http\API\V1\Model\Task;
 use App\Module\Board\Application\Http\API\V1\Model\TaskPosition;
 use App\Module\Board\Application\Http\API\V1\Request\TaskCreateRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdatePositionsRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdateRequest;
+use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\UseCase\TaskCreate\TaskCreateCommand;
 use App\Module\Board\Application\UseCase\TaskDelete\TaskDeleteCommand;
 use App\Module\Board\Application\UseCase\TaskMoveToArchive\TaskMoveToArchiveCommand;
@@ -17,8 +17,8 @@ use App\Module\Board\Application\UseCase\TaskPositionsUpdate\TaskPositionsUpdate
 use App\Module\Board\Application\UseCase\TaskRemoveFromArchive\TaskRemoveFromArchiveCommand;
 use App\Module\Board\Application\UseCase\TaskUpdate\TaskUpdateCommand;
 use App\Module\Board\Domain\DTO\TaskPosition as TaskPositionDTO;
-use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
+use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
@@ -29,9 +29,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class TaskController extends AbstractController
 {
     public function __construct(
-        private readonly BoardRepository $boardRepository,
         private readonly TaskRepository $taskRepository,
-        private readonly CommandBus $commandBus
+        private readonly CommandBus $commandBus,
+        private readonly BoardFinder $boardFinder,
+        private readonly ReadOnlyBoardKeeper $boardKeeper
     ) {}
 
     #[Route(
@@ -47,10 +48,14 @@ class TaskController extends AbstractController
     )]
     public function create(TaskCreateRequest $request): Response
     {
-        $board = $this->boardRepository->findById($request->getBoardId());
+        $board = $this->boardFinder->findById($request->getBoardId());
 
         if ($board === null) {
             return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($board->getBoard())) {
+            return new Response('No access to create a task', 403);
         }
 
         $command = new TaskCreateCommand($request->getBoardId(), $request->getTitle());
@@ -90,6 +95,10 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
+        if ($this->boardKeeper->exists($task->getBoard())) {
+            return new Response('No access to update the task', 403);
+        }
+
         $this->commandBus->execute(
             new TaskUpdateCommand($id, $request->getTitle(), $request->getState())
         );
@@ -113,10 +122,14 @@ class TaskController extends AbstractController
     )]
     public function updatePositions(TaskUpdatePositionsRequest $request): Response
     {
-        $board = $this->boardRepository->findById($request->getBoardId());
+        $board = $this->boardFinder->findById($request->getBoardId());
 
         if ($board === null) {
             return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($board->getBoard())) {
+            return new Response('No access to update task positions', 403);
         }
 
         $this->commandBus->execute(
@@ -149,6 +162,10 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
+        if ($this->boardKeeper->exists($task->getBoard())) {
+            return new Response('No access to archive the task', 403);
+        }
+
         $this->commandBus->execute(
             new TaskMoveToArchiveCommand($id)
         );
@@ -173,6 +190,10 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
+        if ($this->boardKeeper->exists($task->getBoard())) {
+            return new Response('No access to delete from archive', 403);
+        }
+
         $this->commandBus->execute(
             new TaskRemoveFromArchiveCommand($id)
         );
@@ -191,6 +212,10 @@ class TaskController extends AbstractController
 
         if ($task === null) {
             return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($task->getBoard())) {
+            return new Response('No access to delete the task', 403);
         }
 
         $command = new TaskDeleteCommand($id);

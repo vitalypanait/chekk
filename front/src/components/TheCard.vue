@@ -3,6 +3,7 @@
     <v-sheet class="d-flex align-start" :class="isMobile() ? '' : 'handle'" @click="toggleCollapse">
       <the-status
           v-if="isTaskDisplay(display)"
+          :readOnly="readOnly"
           :class="getMarginDisplay(display)"
           v-model="modelValue.status"
           @update:modelValue="updateTask"
@@ -10,6 +11,7 @@
       <v-sheet v-if="isListDisplay(display)" :class="getMarginDisplay(display)" class="font-weight-bold" min-width="28">{{ index + 1 }}</v-sheet>
       <the-task-title
           :class="getTitleMarginDisplay(display)"
+          :readOnly="readOnly"
           class="the-task-title"
           v-model:title="modelValue.title"
           v-model:editable="editable"
@@ -31,7 +33,7 @@
           :close-on-content-click="false"
       >
         <template v-slot:activator="{ props }">
-          <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click="showDelete"></v-icon>
+          <v-icon icon="mdi-dots-vertical" v-bind="props" class="mr-2 handle" @click="showDelete" v-if="!readOnly"></v-icon>
         </template>
 
         <v-list class="rounded-lg">
@@ -85,11 +87,13 @@
           :class="getEditorMarginDisplay(display)"
           class="my-4 mr-10 text-body-2"
           @update:content="addComment"
+          v-if="!readOnly"
       />
-      <v-divider v-if="modelValue.comments.length > 0"></v-divider>
+      <v-divider v-if="modelValue.comments.length > 0 && !readOnly"></v-divider>
       <div v-for="(comment, i) in modelValue.comments" :key="comment.id">
         <the-comment
             v-model="modelValue.comments[i]"
+            :readOnly="readOnly"
             :cancel-delete="!collapse"
             :is-mobile="isMobile()"
             @comment:delete="deleteComment"
@@ -126,7 +130,7 @@ export default {
       isConfirmingDelete: false
     }
   },
-  props: ['modelValue', 'labels', 'collapseTask', 'display', 'index'],
+  props: ['modelValue', 'labels', 'collapseTask', 'display', 'index', 'readOnly'],
   emits: [
     'update:modelValue',
     'editing:update',

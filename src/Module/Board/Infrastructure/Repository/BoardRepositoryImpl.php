@@ -27,6 +27,11 @@ class BoardRepositoryImpl extends ServiceEntityRepository implements BoardReposi
         return Uuid::isValid($id) ? $this->findOneBy(['id' => $id]) : null;
     }
 
+    public function findReadOnlyById(string $id): ?Board
+    {
+        return Uuid::isValid($id) ? $this->findOneBy(['readOnlyId' => $id]) : null;
+    }
+
     public function getById(string $id): Board
     {
         return $this->getEntityManager()->createQueryBuilder()

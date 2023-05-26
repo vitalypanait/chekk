@@ -20,6 +20,8 @@ class Board
 
     private UuidInterface $id;
 
+    private UuidInterface $readOnlyId;
+
     private ?string $title = null;
 
     private string $display;
@@ -27,6 +29,7 @@ class Board
     public function __construct()
     {
         $this->id = Uuid::uuid4();
+        $this->readOnlyId = Uuid::uuid4();
         $this->display = self::DISPLAY_TASK;
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
@@ -59,5 +62,15 @@ class Board
         }
 
         $this->display = $display;
+    }
+
+    public function isReadOnly(UuidInterface $uuid): bool
+    {
+        return $uuid->equals($this->readOnlyId);
+    }
+
+    public function getReadOnlyId(): UuidInterface
+    {
+        return $this->readOnlyId;
     }
 }

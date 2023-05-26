@@ -16,10 +16,14 @@
 <script>
 export default {
   name: 'TheTaskTitle',
-  props: ['title', 'editable'],
+  props: ['title', 'editable', 'readOnly'],
   emits: ['update:title', 'update:editable', 'update'],
   computed: {
     isEditable() {
+      if (this.readOnly) {
+        return;
+      }
+
       if (this.editable) {
         this.$nextTick(() => {
           this.$refs.taskTitle.focus()

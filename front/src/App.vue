@@ -4,8 +4,8 @@
             <v-container class="mx-auto">
                 <v-row>
                     <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
-                        <the-title v-model="board.title" @updateTitle="updateTitle"></the-title>
-                        <div class="d-flex align-center">
+                        <the-title v-model="board.title" @updateTitle="updateTitle" :readOnly="board.readOnly"></the-title>
+                        <div class="d-flex align-center" v-if="!board.readOnly">
                             <div>
                                 <v-icon color="grey" icon="mdi-plus-circle" class="mr-5 ml-3"></v-icon>
                             </div>
@@ -14,7 +14,7 @@
                         <div class="my-5">
                             <draggable
                                 :list="filteredTasks"
-                                :disabled="!isDraggable"
+                                :disabled="!isDraggable || !board.readOnly"
                                 @end="updatePositions"
                                 @start="collapseTasks"
                                 item-key="id"
@@ -28,6 +28,7 @@
                                         :collapseTask="collapseTask"
                                         :display="board.display"
                                         :index="index"
+                                        :readOnly="board.readOnly"
                                         @editing:update="updateEditing"
                                         @task:update="updateTask"
                                         @task:delete="deleteTask"
@@ -114,7 +115,15 @@
                         <v-list-item density="compact" value="Reset" @click="resetStatusFilter()">Reset</v-list-item>
                     </v-list>
                 </v-menu>
-                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+                <v-menu
+                    open-delay="50"
+                    location="top"
+                    class="rounded-lg"
+                    :open-on-hover="!isMobile()"
+                    :open-on-click="isMobile()"
+                    :close-on-content-click="false"
+                    :transition="false"
+                >
                     <template v-slot:activator="{ props }">
                         <v-btn value="labels" v-bind="props" class="me-auto text-body-2" variant="text" rounded="0">
                             Labels
@@ -144,19 +153,20 @@
                                 :variant="getLabelVariant(label)"
                             >{{ label.title }} {{ getLabelCount(label) }}</v-chip>
                         </v-list-item>
-                        <v-list-item density="compact" value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
-                        <v-list-item density="compact" value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
+                        <v-list-item v-if="!board.readOnly" density="compact" value="Add" @click="showLabelsEditor()" v-show="!haveLabels">Add label</v-list-item>
+                        <v-list-item v-if="!board.readOnly" density="compact" value="Edit" @click="showLabelsEditor()" v-show="haveLabels">Edit</v-list-item>
                         <v-list-item density="compact" value="Reset" @click="resetLabelFilter()" v-show="haveLabels">Reset</v-list-item>
                     </v-list>
                 </v-menu>
-                <the-settings v-model:display="board.display" @update:display="updateDisplay"></the-settings>
-                <v-menu open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
+                <the-settings v-if="!board.readOnly" v-model:display="board.display" @update:display="updateDisplay"></the-settings>
+                <v-menu v-if="!board.readOnly" open-delay="50" location="top" class="rounded-lg" :open-on-hover="!isMobile()" :open-on-click="isMobile()" :close-on-content-click="false" :transition="false">
                     <template v-slot:activator="{ props }">
                         <v-btn value="access" v-bind="props" variant="text" rounded="0" class="text-body-2">Access</v-btn>
                     </template>
-
                     <v-list class="rounded-lg" density="compact">
-                        <v-list-item density="compact" value="copyLink" @click="copyLink()">Copy link</v-list-item>
+                        <v-list-item density="compact" class="text-green">Sharing link</v-list-item>
+                        <v-list-item density="compact" value="fullAccess" @click="copyFullAccessLink()">Full access</v-list-item>
+                        <v-list-item density="compact" value="readOnly" @click="copyReadOnlyLink()">Read-only</v-list-item>
                     </v-list>
                 </v-menu>
                 <div ref="copyLink" class="hidden"></div>
@@ -185,7 +195,7 @@ export default {
     components: {TheSettings, TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
     data() {
         return {
-            board: {id: '', title: '', display: '', tasks: [], archivedTasks: []},
+            board: {id: '', title: '', display: '', tasks: [], archivedTasks: [], readOnly: false, readOnlyUrl: null},
             labelDialog: false,
             labels: [],
             labelColors: [
@@ -292,6 +302,8 @@ export default {
                     this.board.display = response.data.display
                     this.board.tasks = response.data.tasks
                     this.board.archivedTasks = response.data.archivedTasks
+                    this.board.readOnly = response.data.readOnly
+                    this.board.readOnlyUrl = response.data.readOnlyUrl
                 });
 
             axios
@@ -593,21 +605,27 @@ export default {
         toggleCollapseArchived() {
             this.collapseArchived = !this.collapseArchived
         },
-        copyLink() {
-            const el = document.createElement('textarea');
-            el.value = window.location.href;
-            el.setAttribute('readonly', '');
-            el.style.position = 'absolute';
-            el.style.left = '-9999px';
-            document.body.appendChild(el);
-            const selected =  document.getSelection().rangeCount > 0  ? document.getSelection().getRangeAt(0) : false;
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            if (selected) {
-                document.getSelection().removeAllRanges();
-                document.getSelection().addRange(selected);
-            }
+        copyFullAccessLink() {
+            this.copyLink(window.location.href)
+        },
+        copyReadOnlyLink() {
+            this.copyLink(this.board.readOnlyUrl)
+        },
+        copyLink(link) {
+          const el = document.createElement('textarea');
+          el.value = link;
+          el.setAttribute('readonly', '');
+          el.style.position = 'absolute';
+          el.style.left = '-9999px';
+          document.body.appendChild(el);
+          const selected =  document.getSelection().rangeCount > 0  ? document.getSelection().getRangeAt(0) : false;
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          if (selected) {
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(selected);
+          }
         },
         updateDisplay(display) {
           this.board.display = display;

@@ -9,7 +9,7 @@
             :close-on-content-click="false"
         >
             <template v-slot:activator="{ props }">
-                <v-icon size="small" color="grey-lighten-1" icon="mdi-dots-vertical" v-bind="props" class="ml-3 handle" @click="showDelete"></v-icon>
+                <v-icon v-if="!readOnly" size="small" color="grey-lighten-1" icon="mdi-dots-vertical" v-bind="props" class="ml-3 handle" @click="showDelete"></v-icon>
             </template>
 
             <v-list class="rounded-lg">
@@ -36,7 +36,7 @@ export default {
             isConfirmingDelete: false,
         }
     },
-    props: ['modelValue', 'cancelDelete', 'isMobile'],
+    props: ['modelValue', 'cancelDelete', 'isMobile', 'readOnly'],
     emits: [
         'update:modelValue',
         'comment:delete',

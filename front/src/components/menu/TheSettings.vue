@@ -3,6 +3,8 @@
       open-delay="50"
       location="top"
       class="rounded-lg"
+      :open-on-hover="!isMobile()"
+      :open-on-click="isMobile()"
       :close-on-content-click="false"
       :transition="false"
   >

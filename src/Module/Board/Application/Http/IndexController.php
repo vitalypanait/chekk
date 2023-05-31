@@ -7,6 +7,8 @@ namespace App\Module\Board\Application\Http;
 use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
+use App\Module\Board\Application\UseCase\BoardReadOnlyCreate\BoardReadOnlyCreateCommand;
+use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +22,8 @@ class IndexController extends AbstractController
         private readonly CommandBus  $commandBus,
         private readonly BoardFinder $boardFinder,
         private readonly ReadOnlyBoardKeeper $boardKeeper,
-        private readonly BoardsCookieJar $boardsCookieJar
+        private readonly BoardsCookieJar $boardsCookieJar,
+        private readonly BoardRepository $boardRepository,
     ) {}
 
     #[Route(
@@ -62,6 +65,12 @@ class IndexController extends AbstractController
     )]
     public function board(Request $request): Response
     {
+        $board = $this->boardRepository->findById((string) $request->get('id'));
+
+        if (!$board->hasReadOnly()) {
+            $this->commandBus->execute(new BoardReadOnlyCreateCommand($board->getId()->toString()));
+        }
+
         $board = $this->boardFinder->findById((string) $request->get('id'));
 
         if ($board === null) {

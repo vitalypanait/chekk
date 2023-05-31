@@ -20,7 +20,7 @@ class Board
 
     private UuidInterface $id;
 
-    private UuidInterface $readOnlyId;
+    private ?UuidInterface $readOnlyId;
 
     private ?string $title = null;
 
@@ -72,5 +72,17 @@ class Board
     public function getReadOnlyId(): UuidInterface
     {
         return $this->readOnlyId;
+    }
+
+    public function hasReadOnly(): bool
+    {
+        return $this->readOnlyId !== null;
+    }
+
+    public function setReadOnly(): void
+    {
+        if (!$this->hasReadOnly()) {
+            $this->readOnlyId = Uuid::uuid4();
+        }
     }
 }

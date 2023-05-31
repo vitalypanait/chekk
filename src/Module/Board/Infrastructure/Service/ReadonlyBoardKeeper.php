@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Module\Board\Infrastructure\Service;
 
 use App\Module\Board\Domain\Entity\Board;
-use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper as ReadOnlyBoardKeeperImpl;
+use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper as ReadOnlyBoardKeeperInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class ReadonlyBoardKeeper implements ReadOnlyBoardKeeperImpl
+class ReadonlyBoardKeeper implements ReadOnlyBoardKeeperInterface
 {
     private const BOARDS_KEY = 'read_only_boards';
 

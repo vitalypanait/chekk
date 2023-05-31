@@ -63,6 +63,18 @@ class TaskRepositoryImpl extends ServiceEntityRepository implements TaskReposito
             ->getSingleResult();
     }
 
+    public function findByBoard(Board $board): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from(Task::class, 't')
+            ->where('t.board = :board')
+            ->setParameter('board', $board)
+            ->orderBy('t.position', 'desc')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findActiveByBoard(Board $board): array
     {
         return $this->getEntityManager()->createQueryBuilder()

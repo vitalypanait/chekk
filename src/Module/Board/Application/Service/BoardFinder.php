@@ -23,6 +23,6 @@ class BoardFinder
             $readOnly = true;
         }
 
-        return new Board($board, $readOnly);
+        return $board === null ? null : new Board($board, $readOnly);
     }
 }

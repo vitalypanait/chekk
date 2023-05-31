@@ -20,6 +20,11 @@ interface TaskRepository
     /**
      * @return Task[]
      */
+    public function findByBoard(Board $board): array;
+
+    /**
+     * @return Task[]
+     */
     public function findActiveByBoard(Board $board): array;
 
     /**

@@ -16,4 +16,12 @@ interface BoardRepository
     public function findReadOnlyById(string $id): ?Board;
 
     public function getById(string $id): Board;
+
+    /**
+     * @param string[] $ids
+     * @return Board[]
+     */
+    public function findByIds(array $ids): array;
+
+    public function delete(Board $board): void;
 }

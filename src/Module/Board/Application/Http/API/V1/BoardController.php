@@ -9,8 +9,11 @@ use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
 use App\Module\Board\Application\Http\API\V1\Request\BoardUpdateRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
 use App\Module\Board\Application\Service\BoardFinder;
+use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
+use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
 use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
+use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
@@ -31,7 +34,9 @@ class BoardController extends AbstractController
         private readonly TaskLabelRepository $taskLabelRepository,
         private readonly CommandBus          $commandBus,
         private readonly BoardFinder         $boardFinder,
-        private readonly ReadOnlyBoardKeeper $boardKeeper
+        private readonly ReadOnlyBoardKeeper $boardKeeper,
+        private readonly BoardsCookieJar $boardsCookieJar,
+        private readonly BoardRepository $boardRepository
     ) {}
 
     /**
@@ -205,12 +210,75 @@ class BoardController extends AbstractController
             'id' => $boardDTO->isReadOnly() ? $boardDTO->getBoard()->getReadOnlyId() : $boardDTO->getBoard()->getId(),
             'readOnlyUrl' => $boardDTO->isReadOnly()
                 ? null
-                : $this->generateUrl('board.index', ['id' => $boardDTO->getBoard()->getReadOnlyId()->toString()], UrlGeneratorInterface::ABSOLUTE_URL),
+                : $this->generateUrl(
+                    'board.index',
+                    ['id' => $boardDTO->getBoard()->getReadOnlyId()->toString()],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
             'title' => $boardDTO->getBoard()->getTitle() === null ? '' : $boardDTO->getBoard()->getTitle(),
             'display' => $boardDTO->getBoard()->getDisplay(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
             'readOnly' => $boardDTO->isReadOnly()
         ];
+    }
+
+    /**
+     * Get info about board
+     */
+    #[Route(
+        '/api/v1/boards/',
+        methods: ['GET']
+    )]
+    #[OA\Tag(name: 'Boards')]
+    public function boards(): Response
+    {
+        $boardsIds = $this->boardsCookieJar->all();
+
+        if (empty($boardsIds)) {
+            return new Response('', 404);
+        }
+
+        $result = [];
+
+        foreach ($this->boardRepository->findByIds($boardsIds) as $board) {
+            if (in_array($board->getReadOnlyId()->toString(), $boardsIds)) {
+                $result[] = ['id' => $board->getReadOnlyId()->toString(), 'title' => $board->getTitle()];
+            }
+
+            if (in_array($board->getId()->toString(), $boardsIds)) {
+                $result[] = ['id' => $board->getId()->toString(), 'title' => $board->getTitle()];
+            }
+        }
+
+        return $this->json($result);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}',
+        methods: ['DELETE']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function delete(string $id): Response
+    {
+        $board = $this->boardFinder->findById($id);
+
+        if ($board === null) {
+            return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($board->getBoard())) {
+            return new Response('No access to delete the board', 403);
+        }
+
+        $this->commandBus->execute(
+            new BoardDeleteCommand($id)
+        );
+
+        return $this->json([]);
     }
 }

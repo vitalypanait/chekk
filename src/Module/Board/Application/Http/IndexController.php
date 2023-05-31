@@ -67,7 +67,7 @@ class IndexController extends AbstractController
     {
         $board = $this->boardRepository->findById((string) $request->get('id'));
 
-        if (!$board->hasReadOnly()) {
+        if ($board !== null && !$board->hasReadOnly()) {
             $this->commandBus->execute(new BoardReadOnlyCreateCommand($board->getId()->toString()));
         }
 

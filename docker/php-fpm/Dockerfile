@@ -23,5 +23,5 @@ ENV DB_HOST=$DB_HOST
 
 CMD cd front && npm i && \
     npm run build ; \
-    composer i -o ; \
+    cd ../ && composer i -o ; \
     wait-for-it $DB_HOST:5432 -- bin/console --no-interaction doctrine:migrations:migrate ; php-fpm

@@ -22,20 +22,39 @@
         </div>
       </v-col>
     </v-row>
+    <div class="the-user">
+      <v-icon icon="mdi-account" color="black" class="mr-4 mt-4" size="large" v-if="authorized"></v-icon>
+    </div>
   </v-container>
+  <div class="text-center">
+    <v-dialog
+        v-model="openInAppDialog"
+        width="auto"
+    >
+      <v-card class="pa-5" min-width="250">
+        <v-text-field variant="underlined" @keyup.enter="openBoard"></v-text-field>
+      </v-card>
+    </v-dialog>
+  </div>
+  <div class="the-open-in-app">
+    <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp"></v-icon>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 import TheBoardItem from "./TheBoardItem.vue";
 import {mobile} from "../mixins/index.js";
+import TheLabel from "./TheLabel.vue";
 
 export default {
   name: 'Index',
-  components: {TheBoardItem},
+  components: {TheLabel, TheBoardItem},
   data() {
     return {
       boards: {id: '', title: ''},
+      authorized: false,
+      openInAppDialog: false
     };
   },
   mixins: [mobile],
@@ -47,7 +66,8 @@ export default {
       axios
           .get('/api/v1/boards/')
           .then(response => {
-            this.boards = response.data
+            this.boards = response.data.boards
+            this.authorized = response.data.authorized
           });
     },
     moveToCreate() {
@@ -59,7 +79,29 @@ export default {
           .then(response => {
             this.fetchAll()
           });
+    },
+    openInApp() {
+      this.openInAppDialog = true;
+    },
+    openBoard(event) {
+      this.openInAppDialog = false;
+
+      this.$router.push('/' + event.target.value)
     }
   }
 };
 </script>
+<style>
+.the-user {
+  top: 0px;
+  z-index: 1004;
+  position: fixed;
+  right: 0px;
+}
+.the-open-in-app {
+  top: 0px;
+  z-index: 1004;
+  position: fixed;
+  left: 0px;
+}
+</style>

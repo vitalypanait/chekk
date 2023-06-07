@@ -2,6 +2,7 @@
   <div>
     <div v-show="!isEditable" class="me-auto pr-3">{{ title }}</div>
     <input placeholder="Add a task"
+           class="the-task-title-edit"
            v-show="isEditable"
            :value="title"
            @click.stop="trySomething()"
@@ -44,3 +45,12 @@ export default {
   }
 };
 </script>
+<style>
+.the-task-title-edit {
+  font-size: 16px !important;
+  line-height: 20px !important;
+  outline: none;
+  width: 100%;
+}
+
+</style>

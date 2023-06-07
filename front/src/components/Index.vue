@@ -22,9 +22,6 @@
         </div>
       </v-col>
     </v-row>
-    <div class="the-user">
-      <v-icon icon="mdi-account" color="black" class="mr-4 mt-4" size="large" v-if="authorized"></v-icon>
-    </div>
   </v-container>
   <div class="text-center">
     <v-dialog
@@ -53,7 +50,6 @@ export default {
   data() {
     return {
       boards: {id: '', title: ''},
-      authorized: false,
       openInAppDialog: false
     };
   },
@@ -67,7 +63,6 @@ export default {
           .get('/api/v1/boards/')
           .then(response => {
             this.boards = response.data.boards
-            this.authorized = response.data.authorized
           });
     },
     moveToCreate() {

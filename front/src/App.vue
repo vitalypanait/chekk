@@ -1,8 +1,6 @@
 <template>
   <v-app class="main-background" full-height>
-    <v-main>
-      <router-view/>
-    </v-main>
+    <router-view/>
   </v-app>
 </template>
 

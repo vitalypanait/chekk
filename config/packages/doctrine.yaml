@@ -27,6 +27,12 @@ doctrine:
                 dir: '%kernel.project_dir%/config/entities/board'
                 prefix: 'App\Module\Board\Domain\Entity'
                 alias: ModuleBoard
+            ModuleCore:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/config/entities/core'
+                prefix: 'App\Module\Core\Domain\Entity'
+                alias: ModuleCore
 
 when@test:
     doctrine:

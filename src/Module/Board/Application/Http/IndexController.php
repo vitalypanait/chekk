@@ -11,23 +11,29 @@ use App\Module\Board\Application\UseCase\BoardReadOnlyCreate\BoardReadOnlyCreate
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
+use App\Module\Core\Domain\Entity\User;
+use App\Module\Core\Domain\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 
 class IndexController extends AbstractController
 {
     public function __construct(
-        private readonly CommandBus  $commandBus,
-        private readonly BoardFinder $boardFinder,
-        private readonly ReadOnlyBoardKeeper $boardKeeper,
-        private readonly BoardsCookieJar $boardsCookieJar,
-        private readonly BoardRepository $boardRepository,
+        private readonly CommandBus                $commandBus,
+        private readonly BoardFinder               $boardFinder,
+        private readonly ReadOnlyBoardKeeper       $boardKeeper,
+        private readonly BoardsCookieJar           $boardsCookieJar,
+        private readonly BoardRepository           $boardRepository,
+        private readonly UserRepository            $userRepository,
+        private readonly LoginLinkHandlerInterface $loginLinkHandler,
     ) {}
 
     #[Route(
         '/',
+        name: 'home'
     )]
     public function index(): Response
     {
@@ -42,8 +48,43 @@ class IndexController extends AbstractController
         }
 
         return $this->render('board.html.twig', [
-            'board' => 'Boards list',
+            'title' => 'Boards list',
         ]);
+    }
+
+    #[Route(
+        '/auth',
+        name: 'auth'
+    )]
+    public function auth(Request $request): Response
+    {
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('home');
+        }
+
+        if ($request->isMethod('POST')) {
+            $email = json_decode($request->getContent(), true)['email'];
+            $user = $this->userRepository->findOneBy(['email' => $email]);
+
+            if ($user === null) {
+                $user = new User($email);
+                $this->userRepository->save($user);
+            }
+
+            $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
+
+            return $this->json([
+                'link' => $loginLinkDetails->getUrl()
+            ]);
+        }
+
+        return $this->render('board.html.twig', ['title' => 'Auth']);
+    }
+
+    #[Route('/login', name: 'login')]
+    public function login(Request $request): Response
+    {
+        return $this->redirectToRoute('home');
     }
 
     #[Route(
@@ -65,13 +106,13 @@ class IndexController extends AbstractController
     )]
     public function board(Request $request): Response
     {
-        $board = $this->boardRepository->findById((string) $request->get('id'));
+        $board = $this->boardRepository->findById((string)$request->get('id'));
 
         if ($board !== null && !$board->hasReadOnly()) {
             $this->commandBus->execute(new BoardReadOnlyCreateCommand($board->getId()->toString()));
         }
 
-        $board = $this->boardFinder->findById((string) $request->get('id'));
+        $board = $this->boardFinder->findById((string)$request->get('id'));
 
         if ($board === null) {
             return new Response('', 404);
@@ -93,7 +134,7 @@ class IndexController extends AbstractController
         );
 
         return $this->render('board.html.twig', [
-            'board' => $board->getBoard()->getTitle(),
+            'title' => $board->getBoard()->getTitle(),
         ], $response);
     }
 }

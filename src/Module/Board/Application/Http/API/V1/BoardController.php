@@ -251,7 +251,7 @@ class BoardController extends AbstractController
             }
         }
 
-        return $this->json($result);
+        return $this->json(['boards' => $result, 'authorized' => $this->isGranted('IS_AUTHENTICATED_FULLY')]);
     }
 
     #[Route(

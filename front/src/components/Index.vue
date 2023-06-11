@@ -36,6 +36,9 @@
   <div class="the-open-in-app">
     <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp"></v-icon>
   </div>
+  <div class="authorized" v-if="authorized">
+    <v-icon icon="mdi-account" color="black" class="mr-4 mt-4" size="large"></v-icon>
+  </div>
 </template>
 
 <script>
@@ -50,6 +53,7 @@ export default {
   data() {
     return {
       boards: {id: '', title: ''},
+      authorized: false,
       openInAppDialog: false
     };
   },
@@ -63,6 +67,7 @@ export default {
           .get('/api/v1/boards/')
           .then(response => {
             this.boards = response.data.boards
+            this.authorized = response.data.authorized
           });
     },
     moveToCreate() {
@@ -87,7 +92,7 @@ export default {
 };
 </script>
 <style>
-.the-user {
+.authorized {
   top: 0px;
   z-index: 1004;
   position: fixed;

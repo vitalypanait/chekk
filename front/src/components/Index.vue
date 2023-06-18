@@ -1,5 +1,8 @@
 <template>
-  <v-container class="mx-auto pt-12">
+  <div class="text-center my-auto" v-if="!isDataReady">
+    <v-progress-circular indeterminate color="grey" :size="47"></v-progress-circular>
+  </div>
+  <v-container class="mx-auto pt-12" v-if="isDataReady">
     <v-row class="mb-2" v-if="hasMyBoards">
       <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
         <div :class="isMobile() ? 'the-title-mobile' : 'the-title'" class="mb-3 ml-1">My boards</div>
@@ -62,7 +65,8 @@ export default {
     return {
       visited: [],
       my: [],
-      openInAppDialog: false
+      openInAppDialog: false,
+      isDataReady: false
     };
   },
   mixins: [mobile, user],
@@ -81,6 +85,8 @@ export default {
           .then(response => {
             this.visited = response.data.visited
             this.my = response.data.my
+
+            this.isDataReady = true
           });
     },
     createNewBoard() {

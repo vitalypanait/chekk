@@ -1,5 +1,8 @@
 <template>
-  <v-container class="mx-auto">
+  <div class="text-center my-auto" v-if="!isDataReady">
+    <v-progress-circular indeterminate color="grey" :size="47"></v-progress-circular>
+  </div>
+  <v-container class="mx-auto" v-if="isDataReady">
     <v-row>
       <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
         <the-title v-model="board.title" @updateTitle="updateTitle" :readOnly="board.readOnly"></the-title>
@@ -145,6 +148,7 @@ export default {
       editing: false,
       collapseTask: false,
       collapseArchived: false,
+      isDataReady: false
     };
   },
   mounted() {
@@ -183,6 +187,7 @@ export default {
 
       this.board = await api.getBoard(id);
       this.labels = await api.getLabelsByBoard(id);
+      this.isDataReady = true;
     },
     filterTasks(tasks) {
       if (this.filteredStatuses.length > 0) {

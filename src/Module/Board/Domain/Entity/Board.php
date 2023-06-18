@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Module\Board\Domain\Entity;
 
 use App\Module\Common\Traits\Timestamped;
+use App\Module\Core\Domain\Entity\User;
 use DateTime;
 use DomainException;
 use Ramsey\Uuid\Uuid;
@@ -26,6 +27,8 @@ class Board
 
     private string $display;
 
+    private ?User $owner;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -33,6 +36,7 @@ class Board
         $this->display = self::DISPLAY_TASK;
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
+        $this->owner = null;
     }
 
     public function updateTitle(string $title): void
@@ -84,5 +88,24 @@ class Board
         if (!$this->hasReadOnly()) {
             $this->readOnlyId = Uuid::uuid4();
         }
+    }
+
+    public function hasOwner(): bool
+    {
+        return $this->owner !== null;
+    }
+
+    public function takeOwnership(User $owner): void
+    {
+        if ($this->owner !== null) {
+            throw new DomainException(sprintf('Board %s already has owner', $this->id->toString()));
+        }
+
+        $this->owner = $owner;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
     }
 }

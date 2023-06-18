@@ -5,6 +5,8 @@
       <v-btn value="access" v-bind="props" variant="text" rounded="0" class="text-body-2">Access</v-btn>
     </template>
     <v-list class="rounded-lg" density="compact">
+      <v-list-item v-if="showOwnership()" density="compact" @click="takeOwnerShip()">Take ownership</v-list-item>
+      <v-divider v-if="showOwnership()"></v-divider>
       <v-list-item density="compact" class="text-green">Sharing link</v-list-item>
       <v-list-item density="compact" value="fullAccess" @click="copyFullAccessLink()">Full access</v-list-item>
       <v-list-item density="compact" value="readOnly" @click="copyReadOnlyLink()">Read-only</v-list-item>
@@ -15,13 +17,17 @@
 
 <script>
 
-import {mobile} from '../../mixins';
+import {mobile, user} from '../../mixins';
 
 export default {
   name: 'TheAccess',
-  props: ['readOnly', 'readOnlyUrl'],
-  mixins: [mobile],
+  props: ['readOnly', 'readOnlyUrl', 'ownership'],
+  mixins: [mobile, user],
+  emits: ['takeOwnership'],
   methods: {
+    showOwnership() {
+      return this.user.authorized && !this.ownership;
+    },
     copyFullAccessLink() {
       this.copyLink(window.location.href)
     },
@@ -44,6 +50,9 @@ export default {
         document.getSelection().addRange(selected);
       }
     },
+    takeOwnerShip() {
+      this.$emit('takeOwnership')
+    }
   }
 };
 </script>

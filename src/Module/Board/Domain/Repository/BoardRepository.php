@@ -24,4 +24,9 @@ interface BoardRepository
     public function findByIds(array $ids): array;
 
     public function delete(Board $board): void;
+
+    /**
+     * @return Board[]
+     */
+    public function findByOwner(string $email): array;
 }

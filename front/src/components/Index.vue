@@ -1,21 +1,28 @@
 <template>
-  <v-container class="mx-auto">
+  <v-container class="mx-auto pt-12">
+    <v-row class="mb-2" v-if="hasMyBoards">
+      <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+        <div :class="isMobile() ? 'the-title-mobile' : 'the-title'" class="mb-3 ml-1">My boards</div>
+        <div class="my-5">
+          <the-board-item
+              v-for="(board, i) in my" :key="board.id"
+              v-model="my[i]"
+              class="mt-2 mr-3"
+              @board:delete="deleteBoard"
+          ></the-board-item>
+        </div>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
-        <div
-            :class="isMobile() ? 'the-title-mobile' : 'the-title'"
-            class="mt-7 mb-8 ml-1"
-        >Previously viewed
-        </div>
-        <div class="d-flex align-center">
-          <v-icon color="blue" icon="mdi-plus-circle" class="mr-5 ml-3" @click="moveToCreate()"
-                  style="cursor: pointer"></v-icon>
-          <div class="text-blue" @click="moveToCreate()" style="cursor: pointer">New board</div>
+        <div :class="isMobile() ? 'the-title-mobile' : 'the-title'" class="mb-3 ml-1">Visited</div>
+        <div v-if="!user.authorized">
+          Only stored on this device. <a href="/auth">Log in</a> to access this list from any device.
         </div>
         <div class="my-5">
           <the-board-item
-              v-for="(board, i) in boards" :key="board.id"
-              v-model="boards[i]"
+              v-for="(board, i) in visited" :key="board.id"
+              v-model="visited[i]"
               class="mt-2 mr-3"
               @board:delete="deleteBoard"
           ></the-board-item>
@@ -34,17 +41,18 @@
     </v-dialog>
   </div>
   <div class="the-open-in-app">
-    <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp"></v-icon>
+    <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp()"></v-icon>
   </div>
-  <div class="authorized" v-if="authorized">
-    <v-icon icon="mdi-account" color="black" class="mr-4 mt-4" size="large"></v-icon>
+  <div class="toolbar-right d-flex mt-4">
+      <v-icon icon="mdi-account-circle" color="black" class="mr-2" size="large" @click="auth()" v-if="!user.authorized"></v-icon>
+      <v-icon icon="mdi-plus-circle" color="black" class="mr-4" size="large" @click="createNewBoard()"></v-icon>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import TheBoardItem from "./TheBoardItem.vue";
-import {mobile} from "../mixins/index.js";
+import {mobile, user} from "../mixins/index.js";
 import TheLabel from "./TheLabel.vue";
 
 export default {
@@ -52,25 +60,30 @@ export default {
   components: {TheLabel, TheBoardItem},
   data() {
     return {
-      boards: {id: '', title: ''},
-      authorized: false,
+      visited: [],
+      my: [],
       openInAppDialog: false
     };
   },
-  mixins: [mobile],
+  mixins: [mobile, user],
   mounted() {
     this.fetchAll();
   },
+  computed: {
+    hasMyBoards() {
+      return this.my.length > 0;
+    }
+  },
   methods: {
-    fetchAll() {
+    async fetchAll() {
       axios
           .get('/api/v1/boards/')
           .then(response => {
-            this.boards = response.data.boards
-            this.authorized = response.data.authorized
+            this.visited = response.data.visited
+            this.my = response.data.my
           });
     },
-    moveToCreate() {
+    createNewBoard() {
       window.location.href = '/create';
     },
     deleteBoard(id) {
@@ -87,12 +100,15 @@ export default {
       this.openInAppDialog = false;
 
       this.$router.push('/' + event.target.value)
+    },
+    auth() {
+      this.$router.push('/auth')
     }
   }
 };
 </script>
 <style>
-.authorized {
+.toolbar-right {
   top: 0px;
   z-index: 1004;
   position: fixed;

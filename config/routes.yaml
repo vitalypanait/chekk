@@ -1,7 +1,13 @@
-controllers:
+board:
     resource:
         path: ../src/Module/Board/Application/Http/
         namespace: App\Module\Board\Application\Http
+    type: attribute
+
+core:
+    resource:
+        path: ../src/Module/Core/Application/Http/
+        namespace: App\Module\Core\Application\Http
     type: attribute
 
 login_check:

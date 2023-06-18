@@ -100,7 +100,12 @@
           @mutate="showLabelsEditor()"
       ></the-labels>
       <the-settings v-if="!board.readOnly" v-model:display="board.display" @update:display="updateDisplay"></the-settings>
-      <the-access v-if="!board.readOnly" :read-only-url="board.readOnlyUrl"></the-access>
+      <the-access
+          v-if="!board.readOnly"
+          :read-only-url="board.readOnlyUrl"
+          :ownership="board.ownership"
+          @take-ownership="takeOwnership"
+      ></the-access>
     </div>
   </div>
 </template>
@@ -120,16 +125,17 @@ import TheSettings from "./menu/TheSettings.vue";
 import TheAccess from "./menu/TheAccess.vue";
 import TheFilters from "./menu/TheFilters.vue";
 import TheLabels from "./menu/TheLabels.vue";
-import { EntityApi } from "../api";
+import { EntityApi, BoardApi } from "../api";
 
 const api = new EntityApi();
+const boardApi = new BoardApi();
 
 export default {
   name: "Board",
   components: {TheSettings, TheAccess, TheFilters, TheLabels, TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
   data() {
     return {
-      board: {id: '', title: '', display: '', tasks: [], archivedTasks: [], readOnly: false, readOnlyUrl: null},
+      board: {id: '', title: '', display: '', tasks: [], archivedTasks: [], readOnly: false, readOnlyUrl: null, ownership: false},
       labelDialog: false,
       labels: [],
       debug: '',
@@ -383,6 +389,10 @@ export default {
       }
 
       await api.updateTitle(this.board.id, {title: this.board.title, display: display});
+    },
+    async takeOwnership() {
+      await boardApi.takeOwnership(this.board.id)
+      this.board.ownership = true
     }
   }
 };

@@ -16,6 +16,28 @@ class UserRepositoryImpl extends ServiceEntityRepository implements UserReposito
         parent::__construct($registry, User::class);
     }
 
+    public function getById(string $id): User
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u')
+            ->andWhere('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getSingleResult();
+    }
+
+    public function getByEmail(string $email): User
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u')
+            ->andWhere('u.email = :email')
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getSingleResult();
+    }
+
     public function save(User $user): void
     {
         $this->getEntityManager()->persist($user);

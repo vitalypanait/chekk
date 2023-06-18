@@ -12,13 +12,16 @@ use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
+use App\Module\Board\Application\UseCase\BoardTakeOwnership\BoardTakeOwnershipCommand;
 use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
+use App\Module\Board\Domain\Entity\Board;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
+use App\Module\Core\Domain\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +39,8 @@ class BoardController extends AbstractController
         private readonly BoardFinder         $boardFinder,
         private readonly ReadOnlyBoardKeeper $boardKeeper,
         private readonly BoardsCookieJar $boardsCookieJar,
-        private readonly BoardRepository $boardRepository
+        private readonly BoardRepository $boardRepository,
+        private readonly UserRepository $userRepository
     ) {}
 
     /**
@@ -219,7 +223,8 @@ class BoardController extends AbstractController
             'display' => $boardDTO->getBoard()->getDisplay(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
-            'readOnly' => $boardDTO->isReadOnly()
+            'readOnly' => $boardDTO->isReadOnly(),
+            'ownership' => $boardDTO->getBoard()->hasOwner()
         ];
     }
 
@@ -243,15 +248,31 @@ class BoardController extends AbstractController
 
         foreach ($this->boardRepository->findByIds($boardsIds) as $board) {
             if (in_array($board->getReadOnlyId()->toString(), $boardsIds)) {
-                $result[] = ['id' => $board->getReadOnlyId()->toString(), 'title' => $board->getTitle()];
+                $result[] = [
+                    'id' => $board->getReadOnlyId()->toString(),
+                    'title' => $board->getTitle(),
+                    'readOnly' => true
+                ];
             }
 
             if (in_array($board->getId()->toString(), $boardsIds)) {
-                $result[] = ['id' => $board->getId()->toString(), 'title' => $board->getTitle()];
+                $result[] = ['id' => $board->getId()->toString(), 'title' => $board->getTitle(), 'readOnly' => false];
             }
         }
 
-        return $this->json(['boards' => $result, 'authorized' => $this->isGranted('IS_AUTHENTICATED_FULLY')]);
+        return $this->json([
+            'my' => $this->getUser() === null
+                ? []
+                : array_map(
+                    fn (Board $board) => [
+                        'id' => $board->getId()->toString(),
+                        'title' => $board->getTitle(),
+                        'readOnly' => false
+                    ],
+                    $this->boardRepository->findByOwner($this->getUser()->getUserIdentifier())
+                ),
+            'visited' => $result
+        ]);
     }
 
     #[Route(
@@ -277,6 +298,41 @@ class BoardController extends AbstractController
 
         $this->commandBus->execute(
             new BoardDeleteCommand($id)
+        );
+
+        return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/board/take-ownership/{id}',
+        methods: ['POST']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function takeOwnership(string $id): Response
+    {
+        $board = $this->boardFinder->findById($id);
+
+        if ($board === null) {
+            return new Response('', 404);
+        }
+
+        if ($this->boardKeeper->exists($board->getBoard())) {
+            return new Response('No access to delete the board', 403);
+        }
+
+        if ($board->getBoard()->hasOwner()) {
+            return new Response('Already has owner', 403);
+        }
+
+        $this->commandBus->execute(
+            new BoardTakeOwnershipCommand(
+                $board->getBoard()->getId()->toString(),
+                $this->userRepository->getByEmail($this->getUser()->getUserIdentifier())->getId()->toString(),
+            )
         );
 
         return $this->json([]);

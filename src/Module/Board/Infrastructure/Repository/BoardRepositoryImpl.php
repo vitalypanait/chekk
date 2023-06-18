@@ -67,4 +67,16 @@ class BoardRepositoryImpl extends ServiceEntityRepository implements BoardReposi
 
         $this->getEntityManager()->remove($board);
     }
+
+    public function findByOwner(string $email): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('b')
+            ->from(Board::class, 'b')
+            ->join('b.owner', 'owner')
+            ->andWhere('owner.email = :email')
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getResult();
+    }
 }

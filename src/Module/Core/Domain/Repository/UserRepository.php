@@ -9,4 +9,8 @@ use App\Module\Core\Domain\Entity\User;
 interface UserRepository
 {
     public function save(User $user): void;
+
+    public function getById(string $id): User;
+
+    public function getByEmail(string $email): User;
 }

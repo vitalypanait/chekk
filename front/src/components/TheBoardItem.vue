@@ -3,6 +3,7 @@
     <v-sheet class="d-flex align-start">
       <v-icon icon="mdi-link" color="grey" class="ml-3" style="cursor: pointer" @click="moveToBoard()"></v-icon>
       <div class="me-auto pr-3 the-board-title ml-5" @click="moveToBoard()">{{ modelValue.title === null ? 'No title' : modelValue.title }}</div>
+      <v-chip v-if="modelValue.readOnly" size="x-small" class="pl-3 pr-5 mr-2" style="margin-top: 2px!important" color="grey">read-only</v-chip>
       <v-menu
           :open-on-hover="!isMobile()"
           :open-on-click="isMobile()"

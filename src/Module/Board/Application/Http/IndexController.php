@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\Http;
 
-use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
-use App\Module\Board\Application\UseCase\BoardReadOnlyCreate\BoardReadOnlyCreateCommand;
-use App\Module\Board\Domain\Repository\BoardRepository;
+use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
@@ -23,10 +21,9 @@ class IndexController extends AbstractController
 {
     public function __construct(
         private readonly CommandBus                $commandBus,
-        private readonly BoardFinder               $boardFinder,
+        private readonly BoardIdRepository         $boardIdRepository,
         private readonly ReadOnlyBoardKeeper       $boardKeeper,
         private readonly BoardsCookieJar           $boardsCookieJar,
-        private readonly BoardRepository           $boardRepository,
         private readonly UserRepository            $userRepository,
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
     ) {}
@@ -106,35 +103,20 @@ class IndexController extends AbstractController
     )]
     public function board(Request $request): Response
     {
-        $board = $this->boardRepository->findById((string)$request->get('id'));
+        $boardId = $this->boardIdRepository->findById((string)$request->get('id'));
 
-        if ($board !== null && !$board->hasReadOnly()) {
-            $this->commandBus->execute(new BoardReadOnlyCreateCommand($board->getId()->toString()));
-        }
-
-        $board = $this->boardFinder->findById((string)$request->get('id'));
-
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($board->isReadOnly()) {
-            $this->boardKeeper->addBoard($board->getBoard());
-        } else {
-            $this->boardKeeper->removeBoard($board->getBoard());
-        }
+        $this->boardKeeper->keep($boardId);
 
         $response = new Response();
 
-        $this->boardsCookieJar->addBoard(
-            $board->isReadOnly()
-                ? $board->getBoard()->getReadOnlyId()->toString()
-                : $board->getBoard()->getId()->toString(),
-            $response
-        );
+        $this->boardsCookieJar->addBoard($boardId->getId()->toString(), $response);
 
         return $this->render('board.html.twig', [
-            'title' => $board->getBoard()->getTitle(),
+            'title' => $boardId->getBoard()->getTitle(),
         ], $response);
     }
 }

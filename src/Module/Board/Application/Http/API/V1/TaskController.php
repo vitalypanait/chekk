@@ -9,7 +9,6 @@ use App\Module\Board\Application\Http\API\V1\Model\TaskPosition;
 use App\Module\Board\Application\Http\API\V1\Request\TaskCreateRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdatePositionsRequest;
 use App\Module\Board\Application\Http\API\V1\Request\TaskUpdateRequest;
-use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\UseCase\TaskCreate\TaskCreateCommand;
 use App\Module\Board\Application\UseCase\TaskDelete\TaskDeleteCommand;
 use App\Module\Board\Application\UseCase\TaskMoveToArchive\TaskMoveToArchiveCommand;
@@ -17,6 +16,7 @@ use App\Module\Board\Application\UseCase\TaskPositionsUpdate\TaskPositionsUpdate
 use App\Module\Board\Application\UseCase\TaskRemoveFromArchive\TaskRemoveFromArchiveCommand;
 use App\Module\Board\Application\UseCase\TaskUpdate\TaskUpdateCommand;
 use App\Module\Board\Domain\DTO\TaskPosition as TaskPositionDTO;
+use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
@@ -31,7 +31,7 @@ class TaskController extends AbstractController
     public function __construct(
         private readonly TaskRepository $taskRepository,
         private readonly CommandBus $commandBus,
-        private readonly BoardFinder $boardFinder,
+        private readonly BoardIdRepository $boardIdRepository,
         private readonly ReadOnlyBoardKeeper $boardKeeper
     ) {}
 
@@ -48,13 +48,13 @@ class TaskController extends AbstractController
     )]
     public function create(TaskCreateRequest $request): Response
     {
-        $board = $this->boardFinder->findById($request->getBoardId());
+        $boardId = $this->boardIdRepository->findById($request->getBoardId());
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to create a task', 403);
         }
 
@@ -95,10 +95,6 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to update the task', 403);
-        }
-
         $this->commandBus->execute(
             new TaskUpdateCommand($id, $request->getTitle(), $request->getState())
         );
@@ -122,13 +118,13 @@ class TaskController extends AbstractController
     )]
     public function updatePositions(TaskUpdatePositionsRequest $request): Response
     {
-        $board = $this->boardFinder->findById($request->getBoardId());
+        $boardId = $this->boardIdRepository->findById($request->getBoardId());
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to update task positions', 403);
         }
 
@@ -162,10 +158,6 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to archive the task', 403);
-        }
-
         $this->commandBus->execute(
             new TaskMoveToArchiveCommand($id)
         );
@@ -190,10 +182,6 @@ class TaskController extends AbstractController
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to delete from archive', 403);
-        }
-
         $this->commandBus->execute(
             new TaskRemoveFromArchiveCommand($id)
         );
@@ -212,10 +200,6 @@ class TaskController extends AbstractController
 
         if ($task === null) {
             return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to delete the task', 403);
         }
 
         $command = new TaskDeleteCommand($id);

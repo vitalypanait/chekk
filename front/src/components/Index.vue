@@ -47,7 +47,7 @@
     <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp()"></v-icon>
   </div>
   <div class="toolbar-right d-flex mt-4">
-      <v-icon icon="mdi-account-circle" color="black" class="mr-2" size="large" @click="auth()" v-if="!user.authorized"></v-icon>
+      <v-icon icon="mdi-account-circle" color="black" class="mr-2" size="large" @click="auth()" v-if="!user.authorized && isDataReady"></v-icon>
       <v-icon icon="mdi-plus-circle" color="black" class="mr-4" size="large" @click="createNewBoard()"></v-icon>
   </div>
 </template>

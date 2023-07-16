@@ -10,9 +10,7 @@ use App\Module\Board\Application\Http\API\V1\Request\TaskLabelCreateRequest;
 use App\Module\Board\Application\UseCase\TaskLabelCreate\TaskLabelCreateCommand;
 use App\Module\Board\Application\UseCase\TaskLabelDelete\TaskLabelDeleteCommand;
 use App\Module\Board\Domain\Repository\LabelRepository;
-use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
-use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
@@ -26,8 +24,6 @@ class TaskLabelController extends AbstractController
         private readonly TaskRepository $taskRepository,
         private readonly LabelRepository $labelRepository,
         private readonly CommandBus $commandBus,
-        private readonly ReadOnlyBoardKeeper $boardKeeper,
-        private readonly TaskLabelRepository $taskLabelRepository,
     ) {}
 
     #[Route(
@@ -47,10 +43,6 @@ class TaskLabelController extends AbstractController
 
         if ($task === null) {
             return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to set label to the task', 403);
         }
 
         $label = $this->labelRepository->getById($request->getLabelId());
@@ -81,12 +73,6 @@ class TaskLabelController extends AbstractController
     #[OA\Tag(name: 'TaskLabel')]
     public function delete(string $id): Response
     {
-        $taskLabel = $this->taskLabelRepository->getById($id);
-
-        if ($this->boardKeeper->exists($taskLabel->getTask()->getBoard())) {
-            return new Response('No access to delete label from the task', 403);
-        }
-
         $this->commandBus->execute(new TaskLabelDeleteCommand($id));
 
         return $this->json([]);

@@ -7,12 +7,11 @@ namespace App\Module\Board\Application\Http\API\V1;
 use App\Module\Board\Application\Http\API\V1\Model\Label;
 use App\Module\Board\Application\Http\API\V1\Request\LabelCreateRequest;
 use App\Module\Board\Application\Http\API\V1\Request\LabelUpdateRequest;
-use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\UseCase\LabelCreate\LabelCreateCommand;
 use App\Module\Board\Application\UseCase\LabelDelete\LabelDeleteCommand;
 use App\Module\Board\Application\UseCase\LabelUpdate\LabelUpdateCommand;
 use App\Module\Board\Domain\Entity\Label as LabelEntity;
-use App\Module\Board\Domain\Repository\BoardRepository;
+use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Repository\LabelRepository;
 use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
@@ -25,10 +24,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class LabelController extends AbstractController
 {
     public function __construct(
-        private readonly BoardRepository     $boardRepository,
-        private readonly LabelRepository     $labelRepository,
-        private readonly CommandBus          $commandBus,
-        private readonly BoardFinder         $boardFinder,
+        private readonly LabelRepository $labelRepository,
+        private readonly CommandBus $commandBus,
+        private readonly BoardIdRepository $boardIdRepository,
         private readonly ReadOnlyBoardKeeper $boardKeeper
     ) {}
 
@@ -45,13 +43,13 @@ class LabelController extends AbstractController
     )]
     public function create(LabelCreateRequest $request): Response
     {
-        $board = $this->boardFinder->findById($request->getBoardId());
+        $boardId = $this->boardIdRepository->findById($request->getBoardId());
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to create a label', 403);
         }
 
@@ -81,10 +79,6 @@ class LabelController extends AbstractController
     {
         $label = $this->labelRepository->getById($request->getId());
 
-        if ($this->boardKeeper->exists($label->getBoard())) {
-            return new Response('No access to update the label', 403);
-        }
-
         $this->commandBus->execute(new LabelUpdateCommand($request->getId(), $request->getTitle()));
 
         $label = $this->labelRepository->getById($label->getId()->toString());
@@ -103,10 +97,6 @@ class LabelController extends AbstractController
     {
         $label = $this->labelRepository->getById($id);
 
-        if ($this->boardKeeper->exists($label->getBoard())) {
-            return new Response('No access to update the label', 403);
-        }
-
         $this->commandBus->execute(new LabelDeleteCommand($id));
 
         return $this->json([]);
@@ -123,9 +113,9 @@ class LabelController extends AbstractController
     )]
     public function findByBoard(string $id): Response
     {
-        $board = $this->boardFinder->findById($id);
+        $boardId = $this->boardIdRepository->findById($id);
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
@@ -136,7 +126,7 @@ class LabelController extends AbstractController
                     $label->getTitle(),
                     $label->getColor()
                 ),
-                $this->labelRepository->findByBoard($board->getBoard())
+                $this->labelRepository->findByBoard($boardId->getBoard())
             )
         );
     }

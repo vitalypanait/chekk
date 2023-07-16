@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\Http\API\V1;
 
-use App\Module\Board\Application\DTO\Board as BoardDTO;
 use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
 use App\Module\Board\Application\Http\API\V1\Request\BoardUpdateRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
-use App\Module\Board\Application\Service\BoardFinder;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
 use App\Module\Board\Application\UseCase\BoardTakeOwnership\BoardTakeOwnershipCommand;
 use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
-use App\Module\Board\Domain\Entity\Board;
+use App\Module\Board\Domain\Entity\BoardId;
+use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
@@ -32,11 +31,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class BoardController extends AbstractController
 {
     public function __construct(
-        private readonly TaskRepository      $taskRepository,
-        private readonly CommentRepository   $commentRepository,
+        private readonly TaskRepository $taskRepository,
+        private readonly CommentRepository $commentRepository,
         private readonly TaskLabelRepository $taskLabelRepository,
-        private readonly CommandBus          $commandBus,
-        private readonly BoardFinder         $boardFinder,
+        private readonly CommandBus $commandBus,
+        private readonly BoardIdRepository $boardIdRepository,
         private readonly ReadOnlyBoardKeeper $boardKeeper,
         private readonly BoardsCookieJar $boardsCookieJar,
         private readonly BoardRepository $boardRepository,
@@ -89,19 +88,15 @@ class BoardController extends AbstractController
     )]
     public function board(string $id): Response
     {
-        $board = $this->boardFinder->findById($id);
+        $boardId = $this->boardIdRepository->findById($id);
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($board->isReadOnly()) {
-            $this->boardKeeper->addBoard($board->getBoard());
-        } else {
-            $this->boardKeeper->removeBoard($board->getBoard());
-        }
+        $this->boardKeeper->keep($boardId);
 
-        return $this->json($this->getFormattedBoard($board));
+        return $this->json($this->getFormattedBoard($boardId));
     }
 
     /**
@@ -127,34 +122,35 @@ class BoardController extends AbstractController
     )]
     public function update(string $id, BoardUpdateRequest $request): Response
     {
-        $board = $this->boardFinder->findById($id);
+        $boardId = $this->boardIdRepository->findById($id);
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to update board', 403);
         }
 
         $this->commandBus->execute(
             new BoardUpdateCommand(
-                $board->getBoard()->getId()->toString(),
+                $boardId->getBoard()->getId()->toString(),
                 $request->getTitle(),
                 $request->getDisplay()
             )
         );
 
-        return $this->json($this->getFormattedBoard($board));
+        return $this->json($this->getFormattedBoard($boardId));
     }
 
-    private function getFormattedBoard(BoardDTO $boardDTO): array
+    private function getFormattedBoard(BoardId $boardId): array
     {
         $tasks = [];
         $archivedTasks = [];
         $taskIds = [];
+        $board = $boardId->getBoard();
 
-        foreach ($this->taskLabelRepository->findByBoard($boardDTO->getBoard()) as $taskLabel) {
+        foreach ($this->taskLabelRepository->findByBoard($board) as $taskLabel) {
             $label = $taskLabel->getLabel();
 
             $labels[$taskLabel->getTask()->getId()->toString()][] = [
@@ -168,7 +164,7 @@ class BoardController extends AbstractController
             ];
         }
 
-        foreach ($this->taskRepository->findActiveByBoard($boardDTO->getBoard()) as $task) {
+        foreach ($this->taskRepository->findActiveByBoard($board) as $task) {
             $taskIds[] = $task->getId()->toString();
 
             $tasks[$task->getId()->toString()] = [
@@ -180,7 +176,7 @@ class BoardController extends AbstractController
             ];
         }
 
-        foreach ($this->taskRepository->findArchivedByBoard($boardDTO->getBoard()) as $task) {
+        foreach ($this->taskRepository->findArchivedByBoard($board) as $task) {
             $taskIds[] = $task->getId()->toString();
 
             $archivedTasks[$task->getId()->toString()] = [
@@ -211,20 +207,20 @@ class BoardController extends AbstractController
         }
 
         return [
-            'id' => $boardDTO->isReadOnly() ? $boardDTO->getBoard()->getReadOnlyId() : $boardDTO->getBoard()->getId(),
-            'readOnlyUrl' => $boardDTO->isReadOnly()
+            'id' => $boardId->getId(),
+            'readOnlyUrl' => $boardId->isReadOnly()
                 ? null
                 : $this->generateUrl(
                     'board.index',
-                    ['id' => $boardDTO->getBoard()->getReadOnlyId()->toString()],
+                    ['id' => $this->boardIdRepository->getReadonlyByBoard($board)->getId()->toString()],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 ),
-            'title' => $boardDTO->getBoard()->getTitle() === null ? '' : $boardDTO->getBoard()->getTitle(),
-            'display' => $boardDTO->getBoard()->getDisplay(),
+            'title' => $board->getTitle() === null ? '' : $boardId->getBoard()->getTitle(),
+            'display' => $board->getDisplay(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
-            'readOnly' => $boardDTO->isReadOnly(),
-            'ownership' => $boardDTO->getBoard()->hasOwner()
+            'readOnly' => $boardId->isReadOnly(),
+            'ownership' => $board->hasOwner()
         ];
     }
 
@@ -246,30 +242,24 @@ class BoardController extends AbstractController
 
         $result = [];
 
-        foreach ($this->boardRepository->findByIds($boardsIds) as $board) {
-            if (in_array($board->getReadOnlyId()->toString(), $boardsIds)) {
-                $result[] = [
-                    'id' => $board->getReadOnlyId()->toString(),
-                    'title' => $board->getTitle(),
-                    'readOnly' => true
-                ];
-            }
-
-            if (in_array($board->getId()->toString(), $boardsIds)) {
-                $result[] = ['id' => $board->getId()->toString(), 'title' => $board->getTitle(), 'readOnly' => false];
-            }
+        foreach ($this->boardIdRepository->findByIds($boardsIds) as $boardId) {
+            $result[] = [
+                'id' => $boardId->getId()->toString(),
+                'title' => $boardId->getBoard()->getTitle(),
+                'readOnly' => $boardId->isReadOnly()
+            ];
         }
 
         return $this->json([
             'my' => $this->getUser() === null
                 ? []
                 : array_map(
-                    fn (Board $board) => [
-                        'id' => $board->getId()->toString(),
-                        'title' => $board->getTitle(),
-                        'readOnly' => false
+                    fn (BoardId $boardId) => [
+                        'id' => $boardId->getId()->toString(),
+                        'title' => $boardId->getBoard()->getTitle(),
+                        'readOnly' => $boardId->isReadOnly()
                     ],
-                    $this->boardRepository->findByOwner($this->getUser()->getUserIdentifier())
+                    $this->boardIdRepository->findByOwner($this->getUser()->getUserIdentifier())
                 ),
             'visited' => $result
         ]);
@@ -286,13 +276,13 @@ class BoardController extends AbstractController
     )]
     public function delete(string $id): Response
     {
-        $board = $this->boardFinder->findById($id);
+        $boardId = $this->boardIdRepository->findById($id);
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to delete the board', 403);
         }
 
@@ -314,23 +304,23 @@ class BoardController extends AbstractController
     )]
     public function takeOwnership(string $id): Response
     {
-        $board = $this->boardFinder->findById($id);
+        $boardId = $this->boardIdRepository->findById($id);
 
-        if ($board === null) {
+        if ($boardId === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($board->getBoard())) {
+        if ($this->boardKeeper->exists($boardId)) {
             return new Response('No access to delete the board', 403);
         }
 
-        if ($board->getBoard()->hasOwner()) {
+        if ($boardId->getBoard()->hasOwner()) {
             return new Response('Already has owner', 403);
         }
 
         $this->commandBus->execute(
             new BoardTakeOwnershipCommand(
-                $board->getBoard()->getId()->toString(),
+                $boardId->getBoard()->getId()->toString(),
                 $this->userRepository->getByEmail($this->getUser()->getUserIdentifier())->getId()->toString(),
             )
         );

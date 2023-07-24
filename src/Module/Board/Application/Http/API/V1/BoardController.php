@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace App\Module\Board\Application\Http\API\V1;
 
 use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
+use App\Module\Board\Application\Http\API\V1\Request\BoardAuthRequest;
+use App\Module\Board\Application\Http\API\V1\Request\BoardPinCodeRequest;
 use App\Module\Board\Application\Http\API\V1\Request\BoardUpdateRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
+use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
+use App\Module\Board\Application\Service\PinCodeAccessInvalidException;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
+use App\Module\Board\Application\UseCase\BoardRemovePinCode\BoardRemovePinCodeCommand;
+use App\Module\Board\Application\UseCase\BoardSetPinCode\BoardSetPinCodeCommand;
 use App\Module\Board\Application\UseCase\BoardTakeOwnership\BoardTakeOwnershipCommand;
 use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
 use App\Module\Board\Domain\Entity\BoardId;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
-use App\Module\Board\Domain\Repository\BoardRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
-use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -27,6 +31,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class BoardController extends AbstractController
 {
@@ -36,10 +41,9 @@ class BoardController extends AbstractController
         private readonly TaskLabelRepository $taskLabelRepository,
         private readonly CommandBus $commandBus,
         private readonly BoardIdRepository $boardIdRepository,
-        private readonly ReadOnlyBoardKeeper $boardKeeper,
         private readonly BoardsCookieJar $boardsCookieJar,
-        private readonly BoardRepository $boardRepository,
-        private readonly UserRepository $userRepository
+        private readonly UserRepository $userRepository,
+        private readonly BoardAccessManagerInterface $boardAccessManager
     ) {}
 
     /**
@@ -86,16 +90,9 @@ class BoardController extends AbstractController
         description: 'Returns info about board',
         content: new Model(type: BoardModel::class)
     )]
-    public function board(string $id): Response
+    #[IsGranted('view', 'boardId')]
+    public function board(BoardId $boardId): Response
     {
-        $boardId = $this->boardIdRepository->findById($id);
-
-        if ($boardId === null) {
-            return new Response('', 404);
-        }
-
-        $this->boardKeeper->keep($boardId);
-
         return $this->json($this->getFormattedBoard($boardId));
     }
 
@@ -120,18 +117,9 @@ class BoardController extends AbstractController
         description: 'Returns info about board',
         content: new Model(type: BoardModel::class)
     )]
-    public function update(string $id, BoardUpdateRequest $request): Response
+    #[IsGranted('edit', 'boardId')]
+    public function update(BoardId $boardId, BoardUpdateRequest $request): Response
     {
-        $boardId = $this->boardIdRepository->findById($id);
-
-        if ($boardId === null) {
-            return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($boardId)) {
-            return new Response('No access to update board', 403);
-        }
-
         $this->commandBus->execute(
             new BoardUpdateCommand(
                 $boardId->getBoard()->getId()->toString(),
@@ -220,7 +208,9 @@ class BoardController extends AbstractController
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
             'readOnly' => $boardId->isReadOnly(),
-            'ownership' => $board->hasOwner()
+            'ownership' => $board->hasOwner(),
+            'isOwner' => $board->isOwner($this->getUser()),
+            'hasPinCode' => $boardId->hasPinCode()
         ];
     }
 
@@ -237,7 +227,7 @@ class BoardController extends AbstractController
         $boardsIds = $this->boardsCookieJar->all();
 
         if (empty($boardsIds)) {
-            return new Response('', 404);
+            return new Response('', Response::HTTP_NOT_FOUND);
         }
 
         $result = [];
@@ -274,27 +264,18 @@ class BoardController extends AbstractController
         response: 200,
         description: '',
     )]
-    public function delete(string $id): Response
+    #[IsGranted('edit', 'boardId')]
+    public function delete(BoardId $boardId): Response
     {
-        $boardId = $this->boardIdRepository->findById($id);
-
-        if ($boardId === null) {
-            return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($boardId)) {
-            return new Response('No access to delete the board', 403);
-        }
-
         $this->commandBus->execute(
-            new BoardDeleteCommand($id)
+            new BoardDeleteCommand($boardId->getId()->toString())
         );
 
         return $this->json([]);
     }
 
     #[Route(
-        '/api/v1/board/take-ownership/{id}',
+        '/api/v1/board/{id}/take-ownership',
         methods: ['POST']
     )]
     #[OA\Tag(name: 'Board')]
@@ -302,20 +283,11 @@ class BoardController extends AbstractController
         response: 200,
         description: '',
     )]
-    public function takeOwnership(string $id): Response
+    #[IsGranted('edit', 'boardId')]
+    public function takeOwnership(BoardId $boardId): Response
     {
-        $boardId = $this->boardIdRepository->findById($id);
-
-        if ($boardId === null) {
-            return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($boardId)) {
-            return new Response('No access to delete the board', 403);
-        }
-
         if ($boardId->getBoard()->hasOwner()) {
-            return new Response('Already has owner', 403);
+            return new Response('Already has owner', Response::HTTP_FORBIDDEN);
         }
 
         $this->commandBus->execute(
@@ -326,5 +298,90 @@ class BoardController extends AbstractController
         );
 
         return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/pin-code',
+        methods: ['POST']
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardPinCodeRequest::class)))]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function setPinCode(BoardId $boardId, BoardPinCodeRequest $request): Response
+    {
+        if (!$boardId->getBoard()->isOwner($this->getUser())) {
+            return new Response('No access to to set pin code the the the board', Response::HTTP_FORBIDDEN);
+        }
+
+        $this->commandBus->execute(
+            new BoardSetPinCodeCommand(
+                $boardId->getId()->toString(),
+                $request->getPinCode()
+            )
+        );
+
+        return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/pin-code',
+        methods: ['DELETE']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function removePinCode(BoardId $boardId): Response
+    {
+        if (!$boardId->getBoard()->isOwner($this->getUser())) {
+            return new Response('No access to to set pin code the the the board', Response::HTTP_FORBIDDEN);
+        }
+
+        $this->commandBus->execute(
+            new BoardRemovePinCodeCommand($boardId->getId()->toString())
+        );
+
+        return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/access',
+        methods: ['GET']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function checkAccess(BoardId $boardId): Response
+    {
+        return $this->json([
+            'access' => $this->boardAccessManager->hasAccess($boardId, $this->getUser())
+        ]);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/access',
+        methods: ['POST']
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardAuthRequest::class)))]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function access(BoardId $boardId, BoardAuthRequest $request): Response
+    {
+        try {
+            $this->boardAccessManager->keep($boardId, $request->getPinCode());
+        } catch (PinCodeAccessInvalidException $e) {
+            return $this->json(['authorized' => false]);
+        }
+
+        return $this->json(['authorized' => true]);
     }
 }

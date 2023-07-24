@@ -2,9 +2,23 @@
   <div class="text-center my-auto" v-if="!isDataReady">
     <v-progress-circular indeterminate color="grey" :size="47"></v-progress-circular>
   </div>
+  <div class="text-center">
+    <v-dialog
+        v-model="openPinCodeDialog"
+        width="auto"
+    >
+      <v-card class="pa-5" min-width="250" max-width="300">
+        <div>To access the board, enter the pin code</div>
+        <v-form @submit.prevent="pinCodeSubmit" validate-on="submit lazy" ref="form">
+          <v-text-field :rules="pinCodeRules" v-model="pinCode" type="string" placeholder="" variant="underlined"></v-text-field>
+          <v-btn :loading="pinCodeLoading" type="submit" variant="tonal" width="100%" class="mt-2 text-body-1 font-weight-medium">Enter</v-btn>
+        </v-form>
+      </v-card>
+    </v-dialog>
+  </div>
   <v-container class="mx-auto" v-if="isDataReady">
     <v-row>
-      <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+      <v-col class="offset-sm-0 v-col-lg-8 offset-lg-2">
         <the-title v-model="board.title" @updateTitle="updateTitle" :readOnly="board.readOnly"></the-title>
         <div class="d-flex align-center" v-if="!board.readOnly">
           <div>
@@ -46,7 +60,7 @@
       </v-col>
     </v-row>
     <v-row v-show="board.archivedTasks.length > 0" class="pb-16">
-      <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+      <v-col class="offset-sm-0 v-col-lg-8 offset-lg-2">
         <div class="text-h5 text-grey font-weight-medium d-flex align-center" style="cursor: pointer"
              @click="toggleCollapseArchived">
           <div>Archive {{ board.archivedTasks.length }}</div>
@@ -91,7 +105,7 @@
   <div class="the-home">
     <v-icon icon="mdi-home-circle" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="$router.push('/')"></v-icon>
   </div>
-  <div class="the-footer">
+  <div class="the-footer" v-if="isDataReady">
     <div class="the-footer__content">
       <the-filters v-show="isBoardHasTypeTask" v-model="this.filteredStatuses" :tasks="board.tasks"></the-filters>
       <the-labels
@@ -107,7 +121,11 @@
           v-if="!board.readOnly"
           :read-only-url="board.readOnlyUrl"
           :ownership="board.ownership"
+          :is-owner="board.isOwner"
+          :has-pin-code="board.hasPinCode"
           @take-ownership="takeOwnership"
+          @pin-code:set-up="setPinCode"
+          @pin-code:remove="removePinCode"
       ></the-access>
     </div>
   </div>
@@ -138,7 +156,18 @@ export default {
   components: {TheSettings, TheAccess, TheFilters, TheLabels, TheComment, TheTitle, TheCard, TheLabel, TheArchivedTask, draggable},
   data() {
     return {
-      board: {id: '', title: '', display: '', tasks: [], archivedTasks: [], readOnly: false, readOnlyUrl: null, ownership: false},
+      board: {
+        id: '',
+        title: '',
+        display: '',
+        tasks: [],
+        archivedTasks: [],
+        readOnly: false,
+        readOnlyUrl: null,
+        ownership: false,
+        isOwner: false,
+        hasPinCode: false
+      },
       labelDialog: false,
       labels: [],
       debug: '',
@@ -148,11 +177,23 @@ export default {
       editing: false,
       collapseTask: false,
       collapseArchived: false,
-      isDataReady: false
+      isDataReady: false,
+      openPinCodeDialog: false,
+      pinCodeLoading: false,
+      pinCode: null,
+      pinCodeRules: [
+        v => !v || v.length === 6 || 'Pin code length is 6 symbols'
+      ]
     };
   },
-  mounted() {
-    this.syncTasks()
+  async mounted() {
+    let access = await boardApi.checkAccess(window.location.pathname.substring(1));
+
+    if (access.access) {
+      await this.syncTasks()
+    } else {
+      this.openPinCodeDialog = true
+    }
   },
   computed: {
     filteredTasks() {
@@ -224,7 +265,7 @@ export default {
         return
       }
 
-      const task = await api.addTask({boardId: this.board.id, title: title})
+      const task = await api.addTask(this.board.id, {boardId: this.board.id, title: title})
 
       this.board.tasks.unshift(task)
       this.task = '';
@@ -236,7 +277,7 @@ export default {
         await this.deleteTask(task)
       }
 
-      await api.updateTask(task.id, {title: task.title, state: task.status})
+      await api.updateTask(this.board.id, task.id, {title: task.title, state: task.status})
     },
     async deleteTask(task) {
       await api.deleteTask(task.id)
@@ -244,18 +285,18 @@ export default {
       this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
     },
     async deleteArchivedTask(task) {
-      await api.deleteTask(task.id)
+      await api.deleteTask(this.board.id, task.id)
 
       this.board.archivedTasks = this.board.archivedTasks.filter((item) => item.id !== task.id)
     },
     async archiveTask(task) {
-      await api.archiveTask(task.id)
+      await api.archiveTask(this.board.id, task.id)
 
       this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
       this.board.archivedTasks.unshift(task)
     },
     async restoreTask(task) {
-      await api.restoreTask(task.id)
+      await api.restoreTask(this.board.id, task.id)
 
       this.board.archivedTasks = this.board.archivedTasks.filter((item) => item.id !== task.id)
       this.board.tasks.unshift(task)
@@ -269,7 +310,7 @@ export default {
         return
       }
 
-      const newComment = await api.addComment({taskId: comment.taskId, content: value});
+      const newComment = await api.addComment(this.board.id,{taskId: comment.taskId, content: value});
 
       this.board.tasks.forEach(currentTask => {
         if (currentTask.id === comment.taskId) {
@@ -278,7 +319,7 @@ export default {
       })
     },
     async deleteComment(comment) {
-      await api.deleteComment(comment.id)
+      await api.deleteComment(this.board.id, comment.id)
 
       this.board.tasks.forEach(currentTask => {
         if (currentTask.id === comment.taskId) {
@@ -287,7 +328,7 @@ export default {
       })
     },
     async makeAsTask(comment) {
-      await api.deleteComment(comment.id)
+      await api.deleteComment(this.board.id, comment.id)
 
       this.board.tasks.forEach(currentTask => {
         if (currentTask.id === comment.taskId) {
@@ -298,7 +339,7 @@ export default {
       })
     },
     async setLabel(label) {
-      const newLabel = await api.setLabel({taskId: label.taskId, labelId: label.id})
+      const newLabel = await api.setLabel(this.board.id, {taskId: label.taskId, labelId: label.id})
 
       this.board.tasks.forEach(currentTask => {
         if (currentTask.id === label.taskId) {
@@ -307,7 +348,7 @@ export default {
       })
     },
     deleteTaskLabel(label) {
-      api.deleteTaskLabel(label.id)
+      api.deleteTaskLabel(this.board.id, label.id)
 
       this.board.tasks.forEach(currentTask => {
         if (currentTask.id === label.taskId) {
@@ -321,13 +362,13 @@ export default {
       let positions = [];
 
       this.board.tasks.forEach((task, index) => {
-        positions.push({taskId: task.id, position: this.board.tasks.length - index})
+        positions.push(this.board.id, {taskId: task.id, position: this.board.tasks.length - index})
       })
 
       await api.updatePositions({boardId: this.board.id, positions: positions})
     },
     async deleteLabel(label) {
-      await api.deleteLabel(label.id)
+      await api.deleteLabel(this.board.id, label.id)
 
       this.labels = this.labels.filter((item) => item.id !== label.id)
 
@@ -375,11 +416,11 @@ export default {
         })
       }
 
-      const newLabel = await api.addLabel({boardId: this.board.id, color: newLabelColor, title: 'label'})
+      const newLabel = await api.addLabel(this.board.id, {boardId: this.board.id, color: newLabelColor, title: 'label'})
       this.labels.push(newLabel)
     },
     async updateLabel(label) {
-      await api.updateLabel({id: label.id, title: label.title})
+      await api.updateLabel(this.board.id, {id: label.id, title: label.title})
       await this.syncTasks()
     },
     toggleCollapseArchived() {
@@ -398,6 +439,35 @@ export default {
     async takeOwnership() {
       await boardApi.takeOwnership(this.board.id)
       this.board.ownership = true
+    },
+    async setPinCode(pinCode) {
+      await boardApi.setPinCode(this.board.id, pinCode)
+      this.board.hasPinCode = true
+    },
+    async removePinCode() {
+      await boardApi.removePinCode(this.board.id)
+      this.board.hasPinCode = false
+    },
+    async pinCodeSubmit () {
+      this.pinCodeLoading = true
+
+      const { valid } = await this.$refs.form.validate()
+
+      if (valid) {
+        let result = await boardApi.authBoard(window.location.pathname.substring(1), this.pinCode);
+
+        console.log(result)
+
+        if (result.authorized) {
+          this.openPinCodeDialog = false
+
+          await this.syncTasks()
+        } else {
+
+        }
+      }
+
+      this.pinCodeLoading = false
     }
   }
 };

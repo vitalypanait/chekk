@@ -9,6 +9,7 @@
             <join-column name="board_id" nullable="false"/>
         </many-to-one>
         <field name="readOnly" type="boolean" />
+        <field name="pinCode" length="64" nullable="true"/>
         <field name="createdAt" type="datetime">
             <gedmo:timestampable on="create" />
         </field>

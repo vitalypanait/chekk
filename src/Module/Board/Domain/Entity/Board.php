@@ -10,6 +10,7 @@ use DateTime;
 use DomainException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class Board
 {
@@ -68,6 +69,15 @@ class Board
     public function hasOwner(): bool
     {
         return $this->owner !== null;
+    }
+
+    public function isOwner(?UserInterface $owner): bool
+    {
+        if ($this->owner === null || $owner === null) {
+            return false;
+        }
+
+        return $this->owner->getUserIdentifier() === $owner->getUserIdentifier();
     }
 
     public function takeOwnership(User $owner): void

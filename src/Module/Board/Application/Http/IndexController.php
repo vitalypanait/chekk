@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\Http;
 
+use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
-use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,10 +23,10 @@ class IndexController extends AbstractController
     public function __construct(
         private readonly CommandBus                $commandBus,
         private readonly BoardIdRepository         $boardIdRepository,
-        private readonly ReadOnlyBoardKeeper       $boardKeeper,
         private readonly BoardsCookieJar           $boardsCookieJar,
         private readonly UserRepository            $userRepository,
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
+        private readonly BoardAccessManagerInterface $boardAccessManager,
     ) {}
 
     #[Route(
@@ -84,6 +85,16 @@ class IndexController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
+    #[Route('/logout', name: 'logout')]
+    public function logout(Security $security): Response
+    {
+        $security->logout(false);
+
+        $this->boardAccessManager->clear();
+
+        return $this->redirectToRoute('home');
+    }
+
     #[Route(
         '/create',
     )]
@@ -108,8 +119,6 @@ class IndexController extends AbstractController
         if ($boardId === null) {
             return new Response('', 404);
         }
-
-        $this->boardKeeper->keep($boardId);
 
         $response = new Response();
 

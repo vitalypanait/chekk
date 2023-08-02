@@ -97,6 +97,7 @@ export default {
 
       if (valid) {
         this.$emit('pinCode:setUp', this.pinCode)
+        this.$refs.form.reset()
         this.loading = false
         this.openPinCodeDialog = false
       } else {

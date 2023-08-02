@@ -168,6 +168,7 @@ export default {
         isOwner: false,
         hasPinCode: false
       },
+      invalidPinCode: false,
       labelDialog: false,
       labels: [],
       debug: '',
@@ -182,7 +183,7 @@ export default {
       pinCodeLoading: false,
       pinCode: null,
       pinCodeRules: [
-        v => !v || v.length === 6 || 'Pin code length is 6 symbols'
+        v => !v || (v.length === 6 && !this.invalidPinCode) || 'Pin code is invalid'
       ]
     };
   },
@@ -439,6 +440,7 @@ export default {
     async takeOwnership() {
       await boardApi.takeOwnership(this.board.id)
       this.board.ownership = true
+      this.board.isOwner = true
     },
     async setPinCode(pinCode) {
       await boardApi.setPinCode(this.board.id, pinCode)
@@ -450,20 +452,21 @@ export default {
     },
     async pinCodeSubmit () {
       this.pinCodeLoading = true
+      this.invalidPinCode = false;
 
       const { valid } = await this.$refs.form.validate()
 
       if (valid) {
         let result = await boardApi.authBoard(window.location.pathname.substring(1), this.pinCode);
 
-        console.log(result)
-
         if (result.authorized) {
           this.openPinCodeDialog = false
 
           await this.syncTasks()
         } else {
+          this.invalidPinCode = true;
 
+          await this.$refs.form.validate()
         }
       }
 

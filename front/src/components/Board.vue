@@ -229,6 +229,7 @@ export default {
 
       this.board = await api.getBoard(id);
       this.labels = await api.getLabelsByBoard(id);
+
       this.isDataReady = true;
     },
     filterTasks(tasks) {

@@ -8,46 +8,43 @@ use App\Module\Board\Application\Http\API\V1\Model\Comment;
 use App\Module\Board\Application\Http\API\V1\Request\CommentCreateRequest;
 use App\Module\Board\Application\UseCase\CommentCreate\CommentCreateCommand;
 use App\Module\Board\Application\UseCase\CommentDelete\CommentDeleteCommand;
+use App\Module\Board\Domain\Entity\BoardId;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
-use App\Module\Board\Domain\Service\ReadOnlyBoardKeeper;
 use App\Module\Common\Bus\CommandBus;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CommentController extends AbstractController
 {
     public function __construct(
-        private readonly TaskRepository      $taskRepository,
-        private readonly CommandBus          $commandBus,
-        private readonly CommentRepository   $commentRepository,
-        private readonly ReadOnlyBoardKeeper $boardKeeper
+        private readonly TaskRepository $taskRepository,
+        private readonly CommandBus $commandBus,
+        private readonly CommentRepository $commentRepository
     ) {}
 
     #[Route(
-        '/api/v1/comment/',
+        '/api/v1/board/{id}/comment/',
         methods: ['POST']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: CommentCreateRequest::class)))]
-    #[OA\Tag(name: 'Comment')]
+    #[OA\Tag(name: 'Board')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about comment',
         content: new Model(type: Comment::class)
     )]
-    public function create(CommentCreateRequest $request): Response
+    #[IsGranted('edit', 'boardId')]
+    public function create(BoardId $boardId, CommentCreateRequest $request): Response
     {
         $task = $this->taskRepository->findById($request->getTaskId());
 
         if ($task === null) {
             return new Response('', 404);
-        }
-
-        if ($this->boardKeeper->exists($task->getBoard())) {
-            return new Response('No access to create a comment', 403);
         }
 
         $command = new CommentCreateCommand($request->getTaskId(), $request->getContent());
@@ -60,23 +57,20 @@ class CommentController extends AbstractController
     }
 
     #[Route(
-        '/api/v1/comment/{id}',
+        '/api/v1/board/{id}/comment/{commentId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Comment')]
-    public function delete(string $id): Response
+    #[OA\Tag(name: 'Board')]
+    #[IsGranted('edit', 'boardId')]
+    public function delete(BoardId $boardId, string $commentId): Response
     {
-        $comment = $this->commentRepository->findById($id);
+        $comment = $this->commentRepository->findById($commentId);
 
         if ($comment === null) {
             return new Response('', 404);
         }
 
-        if ($this->boardKeeper->exists($comment->getTask()->getBoard())) {
-            return new Response('No access to delete the comment', 403);
-        }
-
-        $command = new CommentDeleteCommand($id);
+        $command = new CommentDeleteCommand($commentId);
 
         $this->commandBus->execute($command);
 

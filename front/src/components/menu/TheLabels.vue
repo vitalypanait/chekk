@@ -39,12 +39,12 @@
         </v-chip>
       </v-list-item>
       <v-list-item v-if="!readOnly" density="compact" value="Add" @click="mutate()"
-                   v-show="!haveLabels">Add label
+                   v-show="this.labels.length === 0">Add label
       </v-list-item>
       <v-list-item v-if="!readOnly" density="compact" value="Edit" @click="mutate()"
-                   v-show="haveLabels">Edit
+                   v-show="this.labels.length > 0">Edit
       </v-list-item>
-      <v-list-item density="compact" value="Reset" @click="reset()" v-show="haveLabels">Reset
+      <v-list-item density="compact" value="Reset" @click="reset()" v-show="this.labels.length > 0">Reset
       </v-list-item>
     </v-list>
   </v-menu>
@@ -105,9 +105,6 @@ export default {
     },
     getCount(label) {
       return this.labelsCount[label.id]
-    },
-    haveLabels() {
-      return this.labels.length > 0
     },
     reset() {
       this.$emit('update:modelValue', [])

@@ -1,6 +1,6 @@
 <template>
     <v-sheet>
-        <div class="me-auto text-body-2" v-html="modelValue.content"></div>
+        <div class="me-auto text-body-2" v-html="modelValue.content" style="max-width: 95%"></div>
         <v-menu
             :open-on-hover="!isMobile"
             :open-on-click="isMobile"

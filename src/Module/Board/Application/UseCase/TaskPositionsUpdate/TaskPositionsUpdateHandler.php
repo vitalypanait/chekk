@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Module\Board\Application\UseCase\TaskPositionsUpdate;
 
+use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Common\Command\CommandHandler;
 
 class TaskPositionsUpdateHandler implements CommandHandler
 {
     public function __construct(
-        private readonly TaskRepository $taskRepository
+        private readonly TaskRepository $taskRepository,
+        private readonly BoardIdRepository $boardIdRepository
     ) {}
 
     public function __invoke(TaskPositionsUpdateCommand $command): void
@@ -25,7 +27,12 @@ class TaskPositionsUpdateHandler implements CommandHandler
             $positions[$position->getTaskId()] = $position->getPosition();
         }
 
-        $tasks = $this->taskRepository->findTasksForUpdatePositions($command->getBoardId(), array_keys($positions));
+        $boardId = $this->boardIdRepository->getById($command->getBoardId());
+
+        $tasks = $this->taskRepository->findTasksForUpdatePositions(
+            $boardId->getBoard()->getId()->toString(),
+            array_keys($positions)
+        );
 
         foreach ($tasks as $task) {
             $task->updatePosition($positions[$task->getId()->toString()] ?? 0);

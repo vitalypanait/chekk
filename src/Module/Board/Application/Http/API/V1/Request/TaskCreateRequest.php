@@ -9,21 +9,12 @@ use OpenApi\Attributes as OA;
 
 class TaskCreateRequest implements IdentifierInterface
 {
-    #[OA\Property(description: 'Board ID', example: '839cf68e-4062-4259-addc-09ce5644ee52')]
-    private string $boardId;
-
     #[OA\Property(description: 'Task title', example: 'First task')]
     private string $title;
 
-    public function __construct(string $boardId, string $title)
+    public function __construct(string $title)
     {
-        $this->boardId = $boardId;
         $this->title = $title;
-    }
-
-    public function getBoardId(): string
-    {
-        return $this->boardId;
     }
 
     public function getTitle(): string

@@ -16,62 +16,62 @@ export class EntityApi {
     }
 
     async getLabelsByBoard(id) {
-        return await this.request('get', `/api/v1/label/byBoard/${id}`);
+        return await this.request('get', `/api/v1/board/${id}/label`);
     }
 
     async updateTitle(id, params) {
         return await this.request('put', `/api/v1/board/${id}`, params);
     }
 
-    async addTask(params) {
-        return await this.request('post', `/api/v1/task/`, params);
+    async addTask(boardId, params) {
+        return await this.request('post', `/api/v1/board/${boardId}/task/`, params);
     }
 
-    async updateTask(id, params) {
-        return await this.request('put', `/api/v1/task/${id}`, params);
+    async updateTask(boardId, taskId, params) {
+        return await this.request('put', `/api/v1/board/${boardId}/task/${taskId}`, params);
     }
 
-    async deleteTask(id) {
-        return await this.request('delete', `/api/v1/task/${id}`);
+    async deleteTask(boardId, taskId) {
+        return await this.request('delete', `/api/v1/board/${boardId}/task/${taskId}`);
     }
 
-    async archiveTask(id) {
-        return await this.request('put', `/api/v1/task/archive/${id}`);
+    async archiveTask(boardId, taskId) {
+        return await this.request('put', `/api/v1/board/${boardId}/task/archive/${taskId}`);
     }
 
-    async restoreTask(id) {
-        return await this.request('delete', `/api/v1/task/archive/${id}`);
+    async restoreTask(boardId, taskId) {
+        return await this.request('delete', `/api/v1/board/${boardId}/task/archive/${taskId}`);
     }
 
-    async addComment(params) {
-        return await this.request('post', `/api/v1/comment/`, params);
+    async addComment(boardId, params) {
+        return await this.request('post', `/api/v1/board/${boardId}/comment/`, params);
     }
 
-    async deleteComment(id) {
-        return await this.request('delete', `/api/v1/comment/${id}`);
+    async deleteComment(boardId, commentId) {
+        return await this.request('delete', `/api/v1/board/${boardId}/comment/${commentId}`);
     }
 
-    async setLabel(params) {
-        return await this.request('post', `/api/v1/task-label/`, params);
+    async setLabel(boardId, params) {
+        return await this.request('post', `/api/v1/board/${boardId}/task/label`, params);
     }
 
-    async deleteTaskLabel(id) {
-        return await this.request('delete', `/api/v1/task-label/${id}`);
+    async deleteTaskLabel(boardId, id) {
+        return await this.request('delete', `/api/v1/board/${boardId}/task/label/${id}`);
     }
 
-    async updatePositions(params) {
-        return await this.request('put', `/api/v1/task/position/`, params);
+    async updatePositions(id, params) {
+        return await this.request('put', `/api/v1/board/${id}/task/position/`, params);
     }
 
-    async deleteLabel(id) {
-        return await this.request('delete', `/api/v1/label/${id}`);
+    async deleteLabel(boardId, id) {
+        return await this.request('delete', `/api/v1/board/${boardId}/label/${id}`);
     }
 
-    async addLabel(params) {
-        return await this.request('post', `/api/v1/label/`, params);
+    async addLabel(boardId, params) {
+        return await this.request('post', `/api/v1/board/${boardId}/label/`, params);
     }
 
-    async updateLabel(params) {
-        return await this.request('put', `/api/v1/label/`, params);
+    async updateLabel(boardId, params) {
+        return await this.request('put', `/api/v1/board/${boardId}/label/`, params);
     }
 }

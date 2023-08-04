@@ -4,20 +4,20 @@
   </div>
   <v-container class="mx-auto pt-12" v-if="isDataReady">
     <v-row class="mb-2" v-if="hasMyBoards">
-      <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+      <v-col class="offset-sm-0 v-col-lg-8 offset-lg-2">
         <div :class="isMobile() ? 'the-title-mobile' : 'the-title'" class="mb-3 ml-1">My boards</div>
         <div class="my-5">
           <the-board-item
               v-for="(board, i) in my" :key="board.id"
               v-model="my[i]"
-              class="mt-2 mr-3"
+              class="mt-2"
               @board:delete="deleteBoard"
           ></the-board-item>
         </div>
       </v-col>
     </v-row>
     <v-row>
-      <v-col class="offset-sm-0 v-col-sm-8 offset-sm-2 v-col-lg-8 offset-lg-2">
+      <v-col class="offset-sm-0 v-col-lg-8 offset-lg-2">
         <div :class="isMobile() ? 'the-title-mobile' : 'the-title'" class="mb-3 ml-1">Visited</div>
         <div v-if="!user.authorized">
           Only stored on this device. <a href="/auth">Log in</a> to access this list from any device.
@@ -26,7 +26,7 @@
           <the-board-item
               v-for="(board, i) in visited" :key="board.id"
               v-model="visited[i]"
-              class="mt-2 mr-3"
+              class="mt-2"
               @board:delete="deleteBoard"
           ></the-board-item>
         </div>
@@ -47,7 +47,8 @@
     <v-icon icon="mdi-open-in-app" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="openInApp()"></v-icon>
   </div>
   <div class="toolbar-right d-flex mt-4">
-      <v-icon icon="mdi-account-circle" color="black" class="mr-2" size="large" @click="auth()" v-if="!user.authorized"></v-icon>
+      <v-icon icon="mdi-account-circle" color="black" class="mr-2" size="large" @click="auth()" v-if="!user.authorized && isDataReady"></v-icon>
+      <v-icon icon="mdi-logout-variant" color="black" class="mr-2" size="large" @click="logout()" v-if="user.authorized && isDataReady"></v-icon>
       <v-icon icon="mdi-plus-circle" color="black" class="mr-4" size="large" @click="createNewBoard()"></v-icon>
   </div>
 </template>
@@ -109,6 +110,9 @@ export default {
     },
     auth() {
       this.$router.push('/auth')
+    },
+    logout() {
+      window.location.href = '/logout';
     }
   }
 };

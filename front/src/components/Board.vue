@@ -364,10 +364,10 @@ export default {
       let positions = [];
 
       this.board.tasks.forEach((task, index) => {
-        positions.push(this.board.id, {taskId: task.id, position: this.board.tasks.length - index})
+        positions.push({taskId: task.id, position: this.board.tasks.length - index})
       })
 
-      await api.updatePositions(this.board.id, {boardId: this.board.id, positions: positions})
+      await api.updatePositions(this.board.id, {positions: positions})
     },
     async deleteLabel(label) {
       await api.deleteLabel(this.board.id, label.id)

@@ -37,4 +37,9 @@ class Comment
     {
         return $this->content;
     }
+
+    public function updateContent(string $content): void
+    {
+        $this->content = $content;
+    }
 }

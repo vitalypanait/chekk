@@ -98,6 +98,7 @@
             :is-mobile="isMobile()"
             @comment:delete="deleteComment"
             @comment:make-as-task="makeAsTask"
+            @comment:update="updateComment"
             :class="getCommentMarginDisplay(display)"
             class="d-flex align-center mt-2 mr-3"
         ></the-comment>
@@ -140,6 +141,7 @@ export default {
     'comment:add',
     'comment:delete',
     'comment:makeAsTask',
+    'comment:update',
     'label:add',
     'label:delete'
   ],
@@ -197,6 +199,13 @@ export default {
     },
     makeAsTask(comment) {
       this.$emit('comment:makeAsTask', {
+        id: comment.id,
+        content: comment.content,
+        taskId: this.modelValue.id
+      })
+    },
+    updateComment(comment) {
+      this.$emit('comment:update', {
         id: comment.id,
         content: comment.content,
         taskId: this.modelValue.id

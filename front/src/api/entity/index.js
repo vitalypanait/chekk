@@ -51,6 +51,10 @@ export class EntityApi {
         return await this.request('delete', `/api/v1/board/${boardId}/comment/${commentId}`);
     }
 
+    async updateComment(boardId, commentId, content) {
+        return await this.request('put', `/api/v1/board/${boardId}/comment/${commentId}`, {content: content});
+    }
+
     async setLabel(boardId, params) {
         return await this.request('post', `/api/v1/board/${boardId}/task/label`, params);
     }

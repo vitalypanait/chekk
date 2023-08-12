@@ -6,8 +6,10 @@ namespace App\Module\Board\Application\Http\API\V1;
 
 use App\Module\Board\Application\Http\API\V1\Model\Comment;
 use App\Module\Board\Application\Http\API\V1\Request\CommentCreateRequest;
+use App\Module\Board\Application\Http\API\V1\Request\CommentUpdateRequest;
 use App\Module\Board\Application\UseCase\CommentCreate\CommentCreateCommand;
 use App\Module\Board\Application\UseCase\CommentDelete\CommentDeleteCommand;
+use App\Module\Board\Application\UseCase\CommentUpdate\CommentUpdateCommand;
 use App\Module\Board\Domain\Entity\BoardId;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
@@ -75,5 +77,43 @@ class CommentController extends AbstractController
         $this->commandBus->execute($command);
 
         return $this->json([]);
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/comment/{commentId}',
+        methods: ['PUT']
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        description: 'ID of the comment',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', example: '839cf68e-4062-4259-addc-09ce5644ee52')
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: CommentUpdateRequest::class)))]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns info about comment',
+        content: new Model(type: Comment::class)
+    )]
+    #[IsGranted('edit', 'boardId')]
+    public function update(BoardId $boardId, string $commentId, CommentUpdateRequest $request): Response
+    {
+        $comment = $this->commentRepository->findById($commentId);
+
+        if ($comment === null) {
+            return new Response('', 404);
+        }
+
+        $this->commandBus->execute(
+            new CommentUpdateCommand($commentId, $request->getContent())
+        );
+
+        $comment = $this->commentRepository->getById($comment->getId()->toString());
+
+        return $this->json(
+            (new Comment($comment->getId()->toString(), $comment->getContent()))->jsonSerialize()
+        );
     }
 }

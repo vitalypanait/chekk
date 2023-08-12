@@ -51,6 +51,7 @@
                   @comment:add="addComment"
                   @comment:delete="deleteComment"
                   @comment:make-as-task="makeAsTask"
+                  @comment:update="updateComment"
                   @label:add="setLabel"
                   @label:delete="deleteTaskLabel"
               ></the-card>
@@ -282,7 +283,7 @@ export default {
       await api.updateTask(this.board.id, task.id, {title: task.title, state: task.status})
     },
     async deleteTask(task) {
-      await api.deleteTask(task.id)
+      await api.deleteTask(this.board.id, task.id)
 
       this.board.tasks = this.board.tasks.filter((item) => item.id !== task.id)
     },
@@ -319,6 +320,9 @@ export default {
           currentTask.comments.push(newComment)
         }
       })
+    },
+    async updateComment(comment) {
+      await api.updateComment(this.board.id, comment.id, comment.content)
     },
     async deleteComment(comment) {
       await api.deleteComment(this.board.id, comment.id)

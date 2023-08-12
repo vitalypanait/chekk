@@ -27,9 +27,18 @@ export default {
             type: String,
             default: '',
         },
+        editable: {
+          type: Boolean,
+          default: false
+        }
     },
     emits: ['update:modelValue', 'update:content'],
     watch: {
+      editable(value) {
+        if (value) {
+          this.editor.commands.focus('end')
+        }
+      },
         modelValue(value) {
             const isSame = this.editor.getHTML() === value
 

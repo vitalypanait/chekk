@@ -67,7 +67,7 @@
         </v-list>
       </v-menu>
     </v-sheet>
-    <v-sheet :class="getLabelMarginDisplay(display)" class="mt-1" v-if="modelValue.labels.length > 0" @click="toggleCollapse">
+    <v-sheet :class="getLabelMarginDisplay(display)" class="mt-1 handle" v-if="modelValue.labels.length > 0" @click="toggleCollapse">
       <div>
         <v-chip
             v-for="label in modelValue.labels"

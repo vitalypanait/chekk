@@ -103,8 +103,10 @@
       </v-dialog>
     </div>
   </v-container>
-  <div class="the-home">
-    <v-icon icon="mdi-home-circle" color="black" class="ml-4 mt-4" size="large" style="cursor: pointer" @click="$router.push('/')"></v-icon>
+  <div class="the-top">
+    <div class="the-top__content">
+      <v-icon class="ml-4 mt-4" icon="mdi-home-circle" color="black" size="x-large" style="cursor: pointer" @click="$router.push('/')"></v-icon>
+    </div>
   </div>
   <div class="the-footer" v-if="isDataReady">
     <div class="the-footer__content">
@@ -491,6 +493,25 @@ export default {
   width: 100%;
   font-size: 16px;
   line-height: 20px;
+}
+
+.the-top {
+  background: #f0f0f0;
+  top: 0px;
+  z-index: 1004;
+  transform: translateY(0%);
+  position: fixed;
+  height: 40px;
+  left: 0px;
+  width: calc((100% - 0px) - 0px);
+}
+
+.the-top__content {
+  display: flex;
+  flex: none;
+  font-size: 0.75rem;
+  transition: inherit;
+  width: 100%;
 }
 
 .the-footer {

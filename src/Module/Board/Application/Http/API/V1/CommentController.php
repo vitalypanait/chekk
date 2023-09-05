@@ -34,7 +34,7 @@ class CommentController extends AbstractController
         methods: ['POST']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: CommentCreateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Comment')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about comment',
@@ -62,7 +62,7 @@ class CommentController extends AbstractController
         '/api/v1/board/{id}/comment/{commentId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Comment')]
     #[IsGranted('edit', 'boardId')]
     public function delete(BoardId $boardId, string $commentId): Response
     {
@@ -91,7 +91,7 @@ class CommentController extends AbstractController
         schema: new OA\Schema(type: 'string', example: '839cf68e-4062-4259-addc-09ce5644ee52')
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: CommentUpdateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Comment')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about comment',

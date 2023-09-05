@@ -9,7 +9,8 @@ class BoardUpdateCommand
     public function __construct(
         private string $id,
         private string $title,
-        private string $display
+        private string $display,
+        private string $theme
     ) {}
 
     public function getId(): string
@@ -25,5 +26,10 @@ class BoardUpdateCommand
     public function getDisplay(): string
     {
         return $this->display;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 }

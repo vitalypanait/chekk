@@ -33,7 +33,7 @@ class LabelController extends AbstractController
         methods: ['POST']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: LabelCreateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Label')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about label',
@@ -58,7 +58,7 @@ class LabelController extends AbstractController
         methods: ['PUT']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: LabelUpdateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Label')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about label',
@@ -82,7 +82,7 @@ class LabelController extends AbstractController
         '/api/v1/board/{id}/label/{labelId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Label')]
     #[IsGranted('edit', 'boardId')]
     public function delete(BoardId $boardId, string $labelId): Response
     {
@@ -95,7 +95,7 @@ class LabelController extends AbstractController
         '/api/v1/board/{id}/label',
         methods: ['GET']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Label')]
     #[OA\Response(
         response: 200,
         description: 'Returns labels by board',

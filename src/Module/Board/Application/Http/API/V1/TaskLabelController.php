@@ -33,7 +33,7 @@ class TaskLabelController extends AbstractController
         methods: ['POST']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: TaskLabelCreateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'TaskLabel')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about task',
@@ -73,7 +73,7 @@ class TaskLabelController extends AbstractController
         '/api/v1/board/{id}/task/label/{labelId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'TaskLabel')]
     #[IsGranted('edit', 'boardId')]
     public function delete(BoardId $boardId, string $labelId): Response
     {

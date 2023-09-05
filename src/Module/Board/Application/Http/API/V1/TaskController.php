@@ -38,7 +38,7 @@ class TaskController extends AbstractController
         methods: ['POST']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: TaskCreateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about task',
@@ -70,7 +70,7 @@ class TaskController extends AbstractController
         schema: new OA\Schema(type: 'string', example: '839cf68e-4062-4259-addc-09ce5644ee52')
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: TaskUpdateRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[OA\Response(
         response: 200,
         description: 'Returns info about task',
@@ -101,7 +101,7 @@ class TaskController extends AbstractController
         methods: ['PUT']
     )]
     #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: TaskUpdatePositionsRequest::class)))]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[OA\Response(
         response: 200,
         description: '',
@@ -126,7 +126,7 @@ class TaskController extends AbstractController
         '/api/v1/board/{id}/task/archive/{taskId}',
         methods: ['PUT']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[OA\Response(
         response: 200,
         description: '',
@@ -151,7 +151,7 @@ class TaskController extends AbstractController
         '/api/v1/board/{id}/task/archive/{taskId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[OA\Response(
         response: 200,
         description: '',
@@ -176,7 +176,7 @@ class TaskController extends AbstractController
         '/api/v1/board/{id}/task/{taskId}',
         methods: ['DELETE']
     )]
-    #[OA\Tag(name: 'Board')]
+    #[OA\Tag(name: 'Task')]
     #[IsGranted('edit', 'boardId')]
     public function delete(BoardId $boardId, string $taskId): Response
     {

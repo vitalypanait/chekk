@@ -16,15 +16,22 @@ class BoardUpdateRequest implements IdentifierInterface
     private string $title;
 
     #[OA\Property(
-        description: 'Type of the board',
+        description: 'Board display',
         example: 'task'
     )]
     private string $display;
 
-    public function __construct(string $title, string $display)
+    #[OA\Property(
+        description: 'Board theme',
+        example: 'light'
+    )]
+    private string $theme;
+
+    public function __construct(string $title, string $display, string $theme)
     {
         $this->title = $title;
         $this->display = $display;
+        $this->theme = $theme;
     }
 
     public function getTitle(): string
@@ -35,5 +42,10 @@ class BoardUpdateRequest implements IdentifierInterface
     public function getDisplay(): string
     {
         return $this->display;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 }

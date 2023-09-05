@@ -124,7 +124,8 @@ class BoardController extends AbstractController
             new BoardUpdateCommand(
                 $boardId->getBoard()->getId()->toString(),
                 $request->getTitle(),
-                $request->getDisplay()
+                $request->getDisplay(),
+                $request->getTheme()
             )
         );
 
@@ -205,6 +206,7 @@ class BoardController extends AbstractController
                 ),
             'title' => $board->getTitle() === null ? '' : $boardId->getBoard()->getTitle(),
             'display' => $board->getDisplay(),
+            'theme' => $board->getTheme(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
             'readOnly' => $boardId->isReadOnly(),

@@ -147,7 +147,6 @@ class BoardController extends AbstractController
         response: 200,
         description: '',
     )]
-    #[IsGranted('edit', 'boardId')]
     public function updateHistory(BoardId $boardId): Response
     {
         $response = new JsonResponse();

@@ -8,11 +8,13 @@ use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
+use App\Module\Common\Application\Notificator\NotificatorInterface;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,6 +29,8 @@ class IndexController extends AbstractController
         private readonly UserRepository            $userRepository,
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
         private readonly BoardAccessManagerInterface $boardAccessManager,
+        private readonly NotificatorInterface $notificator,
+
     ) {}
 
     #[Route(
@@ -71,6 +75,12 @@ class IndexController extends AbstractController
 
             $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
 
+            $this->notificator->send(
+                $user->getUserIdentifier(),
+                'Auth link',
+                $loginLinkDetails->getUrl()
+            );
+
             return $this->json([
                 'link' => $loginLinkDetails->getUrl()
             ]);
@@ -88,11 +98,15 @@ class IndexController extends AbstractController
     #[Route('/logout', name: 'logout')]
     public function logout(Security $security): Response
     {
+        $response = new RedirectResponse($this->generateUrl('home'), 302);
+
         $security->logout(false);
 
         $this->boardAccessManager->clear();
 
-        return $this->redirectToRoute('home');
+        $this->boardsCookieJar->clear($response);
+
+        return $response;
     }
 
     #[Route(
@@ -114,15 +128,13 @@ class IndexController extends AbstractController
     )]
     public function board(Request $request): Response
     {
-        $boardId = $this->boardIdRepository->findById((string)$request->get('id'));
+        $boardId = $this->boardIdRepository->findById((string) $request->get('id'));
 
         if ($boardId === null) {
             return new Response('', 404);
         }
 
         $response = new Response();
-
-        $this->boardsCookieJar->addBoard($boardId->getId()->toString(), $response);
 
         return $this->render('board.html.twig', [
             'title' => $boardId->getBoard()->getTitle(),

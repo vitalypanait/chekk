@@ -14,4 +14,6 @@ interface BoardsCookieJar
      * @return string[]
      */
     public function all(): array;
+
+    public function clear(Response $response): void;
 }

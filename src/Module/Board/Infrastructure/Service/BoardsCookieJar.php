@@ -38,4 +38,9 @@ class BoardsCookieJar implements BoardsKeeperInterface
 
         return $cookies->has(self::MY_BOARDS) ? json_decode($cookies->get(self::MY_BOARDS), true) : [];
     }
+
+    public function clear(Response $response): void
+    {
+        $response->headers->removeCookie(self::MY_BOARDS);
+    }
 }

@@ -5,6 +5,10 @@ export class BoardApi extends EntityApi {
         return await this.request('post', `/api/v1/board/${id}/take-ownership`);
     }
 
+    async updateHistory(id) {
+        return await this.request('post', `/api/v1/board/${id}/history`);
+    }
+
     async setPinCode(id, pinCode) {
         return await this.request('post', `/api/v1/board/${id}/pin-code`, {pinCode: pinCode});
     }

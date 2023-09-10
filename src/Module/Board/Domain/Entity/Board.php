@@ -20,8 +20,7 @@ class Board
     public const DISPLAY_LIST = 'list';
     public const DISPLAY_CONTENT = 'content';
 
-    public const THEME_LIGHT = 'light';
-    public const THEME_DARK = 'dark';
+    public const THEME_COLOR_DEFAULT = '000000';
 
     private UuidInterface $id;
 
@@ -29,7 +28,7 @@ class Board
 
     private string $display;
 
-    private string $theme;
+    private string $themeColor;
 
     private ?User $owner;
 
@@ -37,7 +36,7 @@ class Board
     {
         $this->id = Uuid::uuid4();
         $this->display = self::DISPLAY_TASK;
-        $this->theme = self::THEME_LIGHT;
+        $this->themeColor = self::THEME_COLOR_DEFAULT;
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
         $this->owner = null;
@@ -100,17 +99,13 @@ class Board
         return $this->owner;
     }
 
-    public function updateTheme(string $theme): void
+    public function updateThemeColor(string $themeColor): void
     {
-        if (!in_array($theme, [self::THEME_DARK, self::THEME_LIGHT])) {
-            throw new DomainException(sprintf('Invalid theme %s', $theme));
-        }
-
-        $this->theme = $theme;
+        $this->themeColor = $themeColor;
     }
 
-    public function getTheme(): string
+    public function getThemeColor(): string
     {
-        return $this->theme;
+        return '#' . $this->themeColor;
     }
 }

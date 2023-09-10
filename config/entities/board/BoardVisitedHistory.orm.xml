@@ -3,16 +3,17 @@
                   xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    <entity name="App\Module\Core\Domain\Entity\User" table="users">
-        <lifecycle-callbacks/>
+    <entity name="App\Module\Board\Domain\Entity\BoardVisitedHistory" table="board_visited_history">
         <id name="id" type="uuid" column="id" />
-        <field name="email" length="180" unique="true" />
+        <many-to-one field="boardId" target-entity="App\Module\Board\Domain\Entity\BoardId">
+            <join-column name="board_id" nullable="false"/>
+        </many-to-one>
+        <many-to-one field="user" target-entity="App\Module\Core\Domain\Entity\User">
+            <join-column name="user_id" />
+        </many-to-one>
+        <field name="visitedAt" type="datetime"/>
         <field name="createdAt" type="datetime">
             <gedmo:timestampable on="create" />
-        </field>
-
-        <field name="updatedAt" type="datetime">
-            <gedmo:timestampable on="update" />
         </field>
     </entity>
 </doctrine-mapping>

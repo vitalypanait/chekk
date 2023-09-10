@@ -14,20 +14,25 @@ use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\Service\PinCodeAccessInvalidException;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
+use App\Module\Board\Application\UseCase\BoardHistoryUpdate\BoardHistoryUpdateCommand;
 use App\Module\Board\Application\UseCase\BoardRemovePinCode\BoardRemovePinCodeCommand;
 use App\Module\Board\Application\UseCase\BoardSetPinCode\BoardSetPinCodeCommand;
 use App\Module\Board\Application\UseCase\BoardTakeOwnership\BoardTakeOwnershipCommand;
 use App\Module\Board\Application\UseCase\BoardTitleUpdate\BoardUpdateCommand;
 use App\Module\Board\Domain\Entity\BoardId;
+use App\Module\Board\Domain\Entity\BoardVisitedHistory;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
+use App\Module\Board\Domain\Repository\BoardVisitedHistoryRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
 use App\Module\Common\Bus\CommandBus;
+use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -43,7 +48,8 @@ class BoardController extends AbstractController
         private readonly BoardIdRepository $boardIdRepository,
         private readonly BoardsCookieJar $boardsCookieJar,
         private readonly UserRepository $userRepository,
-        private readonly BoardAccessManagerInterface $boardAccessManager
+        private readonly BoardAccessManagerInterface $boardAccessManager,
+        private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
     ) {}
 
     /**
@@ -97,7 +103,7 @@ class BoardController extends AbstractController
     }
 
     /**
-     * Update board title
+     * Update board
      */
     #[Route(
         '/api/v1/board/{id}',
@@ -125,11 +131,37 @@ class BoardController extends AbstractController
                 $boardId->getBoard()->getId()->toString(),
                 $request->getTitle(),
                 $request->getDisplay(),
-                $request->getTheme()
+                $request->getThemeColor()
             )
         );
 
         return $this->json($this->getFormattedBoard($boardId));
+    }
+
+    #[Route(
+        '/api/v1/board/{id}/history',
+        methods: ['POST']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    #[IsGranted('edit', 'boardId')]
+    public function updateHistory(BoardId $boardId): Response
+    {
+        $response = new JsonResponse();
+
+        /** @var ?User $user */
+        $user = $this->getUser();
+
+        if ($user === null) {
+            $this->boardsCookieJar->addBoard($boardId->getId()->toString(), $response);
+        } else {
+            $this->commandBus->execute(new BoardHistoryUpdateCommand($boardId->getId()->toString(), $user));
+        }
+
+        return $response;
     }
 
     private function getFormattedBoard(BoardId $boardId): array
@@ -206,7 +238,7 @@ class BoardController extends AbstractController
                 ),
             'title' => $board->getTitle() === null ? '' : $boardId->getBoard()->getTitle(),
             'display' => $board->getDisplay(),
-            'theme' => $board->getTheme(),
+            'themeColor' => $board->getThemeColor(),
             'tasks' => array_values($tasks),
             'archivedTasks' => array_values($archivedTasks),
             'readOnly' => $boardId->isReadOnly(),
@@ -226,20 +258,30 @@ class BoardController extends AbstractController
     #[OA\Tag(name: 'Boards')]
     public function boards(): Response
     {
-        $boardsIds = $this->boardsCookieJar->all();
+        $isAuthenticated = $this->getUser() !== null;
 
-        if (empty($boardsIds)) {
-            return new Response('', Response::HTTP_NOT_FOUND);
-        }
+        if ($isAuthenticated) {
+            $visited = array_map(
+                fn (BoardVisitedHistory $boardVisitedHistory) => [
+                    'id' => $boardVisitedHistory->getBoardId()->getId()->toString(),
+                    'title' => $boardVisitedHistory->getBoardId()->getBoard()->getTitle(),
+                    'readOnly' => $boardVisitedHistory->getBoardId()->isReadOnly()
+                ],
+                $this->boardVisitedHistoryRepository->findByOwner($this->getUser()->getUserIdentifier())
+            );
+        } else {
+            $boardsIds = $this->boardsCookieJar->all();
+            $visited = [];
 
-        $result = [];
-
-        foreach ($this->boardIdRepository->findByIds($boardsIds) as $boardId) {
-            $result[] = [
-                'id' => $boardId->getId()->toString(),
-                'title' => $boardId->getBoard()->getTitle(),
-                'readOnly' => $boardId->isReadOnly()
-            ];
+            if (!empty($boardsIds)) {
+                foreach ($this->boardIdRepository->findByIds($boardsIds) as $boardId) {
+                    $visited[] = [
+                        'id' => $boardId->getId()->toString(),
+                        'title' => $boardId->getBoard()->getTitle(),
+                        'readOnly' => $boardId->isReadOnly()
+                    ];
+                }
+            }
         }
 
         return $this->json([
@@ -253,7 +295,7 @@ class BoardController extends AbstractController
                     ],
                     $this->boardIdRepository->findByOwner($this->getUser()->getUserIdentifier())
                 ),
-            'visited' => $result
+            'visited' => $visited
         ]);
     }
 

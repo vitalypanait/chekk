@@ -233,6 +233,8 @@ export default {
       this.board = await api.getBoard(id);
       this.labels = await api.getLabelsByBoard(id);
 
+      await boardApi.updateHistory(id);
+
       this.isDataReady = true;
     },
     filterTasks(tasks) {
@@ -261,7 +263,7 @@ export default {
       return result
     },
     async updateTitle(title) {
-      await api.updateTitle(this.board.id, {title: title, display: this.board.display});
+      await api.updateTitle(this.board.id, {title: title, display: this.board.display, themeColor: '000000'});
     },
     async addTask(value) {
       let title = value.trim()
@@ -442,7 +444,7 @@ export default {
         this.filteredLabels = [];
       }
 
-      await api.updateTitle(this.board.id, {title: this.board.title, display: display});
+      await api.updateTitle(this.board.id, {title: this.board.title, display: display, themeColor: '000000'});
     },
     async takeOwnership() {
       await boardApi.takeOwnership(this.board.id)

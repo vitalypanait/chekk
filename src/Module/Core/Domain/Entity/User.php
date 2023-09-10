@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Module\Core\Domain\Entity;
 
+use App\Module\Common\Domain\Event\EventProducer;
 use App\Module\Common\Traits\Timestamped;
+use App\Module\Core\Domain\Event\UserCreated;
 use DateTime;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -12,6 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface
 {
+    use EventProducer;
     use Timestamped;
 
     private const ROLE_USER = 'ROLE_USER';
@@ -29,6 +32,8 @@ class User implements UserInterface
         $this->roles = [];
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
+
+        $this->raiseEvent(new UserCreated($this));
     }
 
     public function getId(): UuidInterface

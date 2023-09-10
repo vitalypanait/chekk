@@ -10,7 +10,7 @@ class BoardUpdateCommand
         private string $id,
         private string $title,
         private string $display,
-        private string $theme
+        private string $themeColor
     ) {}
 
     public function getId(): string
@@ -28,8 +28,8 @@ class BoardUpdateCommand
         return $this->display;
     }
 
-    public function getTheme(): string
+    public function getThemeColor(): string
     {
-        return $this->theme;
+        return $this->themeColor;
     }
 }

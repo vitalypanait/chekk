@@ -31,3 +31,6 @@ services:
         tags:
             - { name: controller.request_value_resolver, priority: 50 }
 
+    App\Module\Common\Infrastructure\Event\DomainEventsSubscriber:
+        tags:
+            - name: 'doctrine.event_subscriber'

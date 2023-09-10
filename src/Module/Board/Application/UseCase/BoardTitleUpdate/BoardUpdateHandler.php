@@ -17,6 +17,6 @@ class BoardUpdateHandler implements CommandHandler
 
         $board->updateTitle($command->getTitle());
         $board->updateDisplay($command->getDisplay());
-        $board->updateTheme($command->getTheme());
+        $board->updateThemeColor($command->getThemeColor());
     }
 }

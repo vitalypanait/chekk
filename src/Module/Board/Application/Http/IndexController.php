@@ -8,7 +8,6 @@ use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
-use App\Module\Common\Application\Notificator\NotificatorInterface;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
@@ -29,8 +28,6 @@ class IndexController extends AbstractController
         private readonly UserRepository            $userRepository,
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
         private readonly BoardAccessManagerInterface $boardAccessManager,
-        private readonly NotificatorInterface $notificator,
-
     ) {}
 
     #[Route(

@@ -33,7 +33,11 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -426,5 +430,31 @@ class BoardController extends AbstractController
         }
 
         return $this->json(['authorized' => true]);
+    }
+
+    #[Route(
+        '/api/v1/test',
+        methods: ['GET']
+    )]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: '',
+    )]
+    public function test(Request $request): Response
+    {
+        $transport = new EsmtpTransport();
+
+        $mailer = new Mailer($transport);
+
+        $email = (new Email())
+            ->from('no-reply@windo.us')
+            ->to('panait.v@yandex.ru')
+            ->subject('Time for Symfony Mailer!')
+            ->text('Sending emails is fun again!');
+
+        $mailer->send($email);
+
+        return $this->json([]);
     }
 }

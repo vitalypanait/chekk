@@ -72,12 +72,6 @@ class IndexController extends AbstractController
 
             $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
 
-            $this->notificator->send(
-                $user->getUserIdentifier(),
-                'Auth link',
-                $loginLinkDetails->getUrl()
-            );
-
             return $this->json([
                 'link' => $loginLinkDetails->getUrl()
             ]);

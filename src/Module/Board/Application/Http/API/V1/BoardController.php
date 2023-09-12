@@ -449,7 +449,7 @@ class BoardController extends AbstractController
 
         $email = (new Email())
             ->from('no-reply@windo.us')
-            ->to('panait.v@yandex.ru')
+            ->to($request->get('to'))
             ->subject('Time for Symfony Mailer!')
             ->text('Sending emails is fun again!');
 

@@ -443,7 +443,7 @@ class BoardController extends AbstractController
     )]
     public function test(Request $request): Response
     {
-        $transport = new EsmtpTransport();
+        $transport = new EsmtpTransport($request->get('host'));
 
         $mailer = new Mailer($transport);
 

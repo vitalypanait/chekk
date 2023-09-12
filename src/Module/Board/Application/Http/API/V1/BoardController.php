@@ -37,6 +37,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Symfony\Component\Mailer\Transport\Smtp\SmtpTransport;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -443,7 +444,7 @@ class BoardController extends AbstractController
     )]
     public function test(Request $request): Response
     {
-        $transport = new EsmtpTransport($request->get('host'));
+        $transport = new SmtpTransport();
 
         $mailer = new Mailer($transport);
 

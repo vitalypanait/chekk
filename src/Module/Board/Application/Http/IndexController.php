@@ -7,7 +7,9 @@ namespace App\Module\Board\Application\Http;
 use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
+use App\Module\Board\Application\UseCase\BoardHistoryInit\BoardHistoryInitCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
+use App\Module\Board\Domain\Repository\BoardVisitedHistoryRepository;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
@@ -28,6 +30,7 @@ class IndexController extends AbstractController
         private readonly UserRepository            $userRepository,
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
         private readonly BoardAccessManagerInterface $boardAccessManager,
+        private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
     ) {}
 
     #[Route(
@@ -83,6 +86,17 @@ class IndexController extends AbstractController
     #[Route('/login', name: 'login')]
     public function login(Request $request): Response
     {
+        // Temporary for old users
+        if ($this->getUser() !== null) {
+            $visitedBoards = $this->boardVisitedHistoryRepository->findByOwner($this->getUser()->getUserIdentifier());
+
+            if (empty($visitedBoards) && !empty($this->boardsCookieJar->all())) {
+                $this->commandBus->execute(
+                    new BoardHistoryInitCommand($this->boardsCookieJar->all(), $this->getUser())
+                );
+            }
+        }
+
         return $this->redirectToRoute('home');
     }
 

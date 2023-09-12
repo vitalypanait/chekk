@@ -24,7 +24,7 @@ class BoardHistoryUpdateHandler implements CommandHandler
             $command->getUser()
         );
         $owner = $boardId->getBoard()->getOwner();
-        $isOwnerBoard = $owner !== null && $owner->getUserIdentifier() !== $command->getUser()->getUserIdentifier();
+        $isOwnerBoard = $owner !== null && $owner->getUserIdentifier() === $command->getUser()->getUserIdentifier();
 
         if ($boardHistory === null) {
             if ($isOwnerBoard) {

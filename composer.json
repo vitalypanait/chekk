@@ -15,6 +15,7 @@
         "league/tactician-bundle": "^1.4",
         "league/tactician-doctrine": "^1.2",
         "nelmio/api-doc-bundle": "^4.11",
+        "nelmio/cors-bundle": "^2.3",
         "ramsey/uuid-doctrine": "^2.0",
         "symfony/asset": "6.2.*",
         "symfony/console": "6.2.*",

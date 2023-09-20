@@ -15,8 +15,22 @@ class BoardUpdateHandler implements CommandHandler
     {
         $board = $this->boardRepository->getById($command->getId());
 
-        $board->updateTitle($command->getTitle());
-        $board->updateDisplay($command->getDisplay());
-        $board->updateThemeColor($command->getThemeColor());
+        if ($command->getTitle() !== null) {
+            $board->updateTitle($command->getTitle());
+        }
+
+        if ($command->getDisplay() !== null) {
+            $board->updateDisplay($command->getDisplay());
+        }
+
+        if ($command->getThemeColor() !== null) {
+            $themeColor = $command->getThemeColor();
+
+            if (mb_strlen($themeColor) === 7) {
+                $themeColor = mb_substr($themeColor, 1);
+            }
+
+            $board->updateThemeColor($themeColor);
+        }
     }
 }

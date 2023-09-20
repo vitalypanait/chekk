@@ -7,7 +7,7 @@ namespace App\Module\Board\Application\Http\API\V1;
 use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
 use App\Module\Board\Application\Http\API\V1\Request\BoardAuthRequest;
 use App\Module\Board\Application\Http\API\V1\Request\BoardPinCodeRequest;
-use App\Module\Board\Application\Http\API\V1\Request\BoardUpdateRequest;
+use App\Module\Board\Application\Http\API\V1\Request\BoardPatchRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
 use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
@@ -121,7 +121,7 @@ class BoardController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', example: '839cf68e-4062-4259-addc-09ce5644ee52')
     )]
-    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardUpdateRequest::class)))]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardPatchRequest::class)))]
     #[OA\Tag(name: 'Board')]
     #[OA\Response(
         response: 200,
@@ -129,7 +129,7 @@ class BoardController extends AbstractController
         content: new Model(type: BoardModel::class)
     )]
     #[IsGranted('edit', 'boardId')]
-    public function update(BoardId $boardId, BoardUpdateRequest $request): Response
+    public function update(BoardId $boardId, BoardPatchRequest $request): Response
     {
         $this->commandBus->execute(
             new BoardUpdateCommand(
@@ -431,6 +431,42 @@ class BoardController extends AbstractController
         }
 
         return $this->json(['authorized' => true]);
+    }
+
+    /**
+     * Update board params
+     */
+    #[Route(
+        '/api/v1/board/{id}',
+        methods: ['PATCH']
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        description: 'ID of the board',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', example: '839cf68e-4062-4259-addc-09ce5644ee52')
+    )]
+    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardPatchRequest::class)))]
+    #[OA\Tag(name: 'Board')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns info about board',
+        content: new Model(type: BoardModel::class)
+    )]
+    #[IsGranted('edit', 'boardId')]
+    public function patch(BoardId $boardId, BoardPatchRequest $request): Response
+    {
+        $this->commandBus->execute(
+            new BoardUpdateCommand(
+                $boardId->getBoard()->getId()->toString(),
+                $request->getTitle(),
+                $request->getDisplay(),
+                $request->getThemeColor()
+            )
+        );
+
+        return $this->json($this->getFormattedBoard($boardId));
     }
 
     #[Route(

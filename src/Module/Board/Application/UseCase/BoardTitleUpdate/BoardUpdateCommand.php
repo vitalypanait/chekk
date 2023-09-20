@@ -7,10 +7,10 @@ namespace App\Module\Board\Application\UseCase\BoardTitleUpdate;
 class BoardUpdateCommand
 {
     public function __construct(
-        private string $id,
-        private string $title,
-        private string $display,
-        private string $themeColor
+        private readonly string $id,
+        private readonly ?string $title = null,
+        private readonly ?string $display = null,
+        private readonly ?string $themeColor = null
     ) {}
 
     public function getId(): string
@@ -18,17 +18,17 @@ class BoardUpdateCommand
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    public function getDisplay(): string
+    public function getDisplay(): ?string
     {
         return $this->display;
     }
 
-    public function getThemeColor(): string
+    public function getThemeColor(): ?string
     {
         return $this->themeColor;
     }

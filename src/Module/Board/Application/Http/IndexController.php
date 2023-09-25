@@ -10,6 +10,7 @@ use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardHistoryInit\BoardHistoryInitCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
 use App\Module\Board\Domain\Repository\BoardVisitedHistoryRepository;
+use App\Module\Common\Application\Notificator\EmailNotificatorInterface;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
@@ -31,6 +32,7 @@ class IndexController extends AbstractController
         private readonly LoginLinkHandlerInterface $loginLinkHandler,
         private readonly BoardAccessManagerInterface $boardAccessManager,
         private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
+        private readonly EmailNotificatorInterface $emailNotificator,
     ) {}
 
     #[Route(
@@ -74,6 +76,12 @@ class IndexController extends AbstractController
             }
 
             $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
+
+            $this->emailNotificator->send(
+                $email,
+                'Authorization link',
+                'Link to auth - ' . $loginLinkDetails->getUrl()
+            );
 
             return $this->json([
                 'link' => $loginLinkDetails->getUrl()

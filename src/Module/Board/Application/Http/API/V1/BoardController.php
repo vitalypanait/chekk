@@ -36,6 +36,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -54,6 +55,7 @@ class BoardController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly BoardAccessManagerInterface $boardAccessManager,
         private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
+        private readonly MailerInterface $mailer
     ) {}
 
     /**
@@ -479,17 +481,13 @@ class BoardController extends AbstractController
     )]
     public function test(Request $request): Response
     {
-        $transport = new EsmtpTransport();
-
-        $mailer = new Mailer($transport);
-
         $email = (new Email())
             ->from('no-reply@windo.us')
             ->to($request->get('to'))
             ->subject('Time for Symfony Mailer!')
             ->text('Sending emails is fun again!');
 
-        $mailer->send($email);
+        $this->mailer->send($email);
 
         return $this->json([]);
     }

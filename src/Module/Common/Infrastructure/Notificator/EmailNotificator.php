@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Module\Common\Infrastructure\Notificator;
 
 use App\Module\Common\Application\Notificator\EmailNotificatorInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -14,13 +15,17 @@ class EmailNotificator implements EmailNotificatorInterface
         private readonly MailerInterface $mailer
     ){}
 
-    public function send(string $email, string $subject, string $text): void
+    public function sendHtml(string $email, string $subject, string $templatePath, array $context = []): void
     {
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from('no-reply@windo.us')
             ->to($email)
             ->subject($subject)
-            ->text($text);
+            ->htmlTemplate($templatePath);
+
+        if (!empty($context)) {
+            $email->context($context);
+        }
 
         $this->mailer->send($email);
     }

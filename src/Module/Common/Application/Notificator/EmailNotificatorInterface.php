@@ -4,5 +4,5 @@ namespace App\Module\Common\Application\Notificator;
 
 interface EmailNotificatorInterface
 {
-    public function send(string $email, string $subject, string $text): void;
+    public function sendHtml(string $email, string $subject, string $templatePath, array $context = []): void;
 }

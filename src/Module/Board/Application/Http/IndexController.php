@@ -77,10 +77,13 @@ class IndexController extends AbstractController
 
             $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
 
-            $this->emailNotificator->send(
+            $this->emailNotificator->sendHtml(
                 $email,
                 'Authorization link',
-                'Link to auth - ' . $loginLinkDetails->getUrl()
+                'emails/auth.html.twig',
+                [
+                    'link' => $loginLinkDetails->getUrl()
+                ]
             );
 
             return $this->json([

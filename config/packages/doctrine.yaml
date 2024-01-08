@@ -33,6 +33,11 @@ doctrine:
                 dir: '%kernel.project_dir%/config/entities/core'
                 prefix: 'App\Module\Core\Domain\Entity'
                 alias: ModuleCore
+            ModuleAuth:
+                type: attribute
+                dir: '%kernel.project_dir%/src/Module/Auth/Domain/Entity'
+                prefix: 'App\Module\Auth\Domain\Entity'
+                alias: ModuleAuth
 
 when@test:
     doctrine:

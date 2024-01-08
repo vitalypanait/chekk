@@ -7,20 +7,14 @@ namespace App\Module\Board\Application\Http;
 use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
-use App\Module\Board\Application\UseCase\BoardHistoryInit\BoardHistoryInitCommand;
 use App\Module\Board\Domain\Repository\BoardIdRepository;
-use App\Module\Board\Domain\Repository\BoardVisitedHistoryRepository;
-use App\Module\Common\Application\Notificator\EmailNotificatorInterface;
 use App\Module\Common\Bus\CommandBus;
-use App\Module\Core\Domain\Entity\User;
-use App\Module\Core\Domain\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 
 class IndexController extends AbstractController
 {
@@ -28,11 +22,7 @@ class IndexController extends AbstractController
         private readonly CommandBus                $commandBus,
         private readonly BoardIdRepository         $boardIdRepository,
         private readonly BoardsCookieJar           $boardsCookieJar,
-        private readonly UserRepository            $userRepository,
-        private readonly LoginLinkHandlerInterface $loginLinkHandler,
         private readonly BoardAccessManagerInterface $boardAccessManager,
-        private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
-        private readonly EmailNotificatorInterface $emailNotificator,
     ) {}
 
     #[Route(
@@ -54,61 +44,6 @@ class IndexController extends AbstractController
         return $this->render('board.html.twig', [
             'title' => 'Boards list',
         ]);
-    }
-
-    #[Route(
-        '/auth',
-        name: 'auth'
-    )]
-    public function auth(Request $request): Response
-    {
-        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->redirectToRoute('home');
-        }
-
-        if ($request->isMethod('POST')) {
-            $email = json_decode($request->getContent(), true)['email'];
-            $user = $this->userRepository->findOneBy(['email' => $email]);
-
-            if ($user === null) {
-                $user = new User($email);
-                $this->userRepository->save($user);
-            }
-
-            $loginLinkDetails = $this->loginLinkHandler->createLoginLink($user);
-
-            $this->emailNotificator->sendHtml(
-                $email,
-                'Authorization link',
-                'emails/auth.html.twig',
-                [
-                    'link' => $loginLinkDetails->getUrl()
-                ]
-            );
-
-            return $this->json([
-                'link' => $loginLinkDetails->getUrl()
-            ]);
-        }
-
-        return $this->render('board.html.twig', ['title' => 'Auth']);
-    }
-
-    #[Route('/login', name: 'login')]
-    public function login(Request $request): Response
-    {
-        // Temporary for old users
-        if ($this->getUser() !== null) {
-            $visitedBoards = $this->boardVisitedHistoryRepository->findByOwner($this->getUser()->getUserIdentifier());
-
-            if (empty($visitedBoards) && !empty($this->boardsCookieJar->all())) {
-                $this->commandBus->execute(
-                    new BoardHistoryInitCommand($this->boardsCookieJar->all(), $this->getUser())
-                );
-            }
-        }
-
-        return $this->redirectToRoute('home');
     }
 
     #[Route('/logout', name: 'logout')]

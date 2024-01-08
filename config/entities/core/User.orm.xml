@@ -7,6 +7,7 @@
         <lifecycle-callbacks/>
         <id name="id" type="uuid" column="id" />
         <field name="email" length="180" unique="true" />
+        <field name="password"/>
         <field name="createdAt" type="datetime">
             <gedmo:timestampable on="create" />
         </field>

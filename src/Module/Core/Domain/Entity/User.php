@@ -10,9 +10,11 @@ use App\Module\Core\Domain\Event\UserCreated;
 use DateTime;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class User implements UserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use EventProducer;
     use Timestamped;
@@ -24,6 +26,7 @@ class User implements UserInterface
     private string $email;
 
     private array $roles;
+    private string $password;
 
     public function __construct(string $email)
     {
@@ -34,6 +37,11 @@ class User implements UserInterface
         $this->updatedAt = new DateTime();
 
         $this->raiseEvent(new UserCreated($this));
+    }
+
+    public function setPassword(UserPasswordHasherInterface $passwordHasher, string $password): void
+    {
+        $this->password = $passwordHasher->hashPassword($this, $password);
     }
 
     public function getId(): UuidInterface
@@ -53,5 +61,10 @@ class User implements UserInterface
     public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
     }
 }

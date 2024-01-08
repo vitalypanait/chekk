@@ -12,12 +12,23 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        jwt_auth:
+            pattern: ^/api/v1/auth
+            stateless: true
+            json_login:
+                check_path: /api/v1/auth
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        api:
+            pattern: ^/api
+            stateless: true
+            entry_point: jwt
+            jwt: ~
+            refresh_jwt:
+                check_path: /api/v1/token/refresh
+
         main:
-            login_link:
-                check_route: login
-                signature_properties: ['id']
-                lifetime: 300
-                max_uses: 1
+            lazy: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

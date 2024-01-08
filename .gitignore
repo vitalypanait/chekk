@@ -16,3 +16,7 @@
 /public/dist
 /public/assets
 /public/manifest.json
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###

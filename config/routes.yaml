@@ -10,5 +10,8 @@ core:
         namespace: App\Module\Core\Application\Http
     type: attribute
 
-login_check:
-    path: /login
+jwt_auth:
+    path: /api/v1/auth
+
+api_refresh_token:
+    path: /api/v1/token/refresh

@@ -268,7 +268,9 @@ class BoardController extends AbstractController
                 fn (BoardVisitedHistory $boardVisitedHistory) => [
                     'id' => $boardVisitedHistory->getBoardId()->getId()->toString(),
                     'title' => $boardVisitedHistory->getBoardId()->getBoard()->getTitle(),
-                    'readOnly' => $boardVisitedHistory->getBoardId()->isReadOnly()
+                    'readOnly' => $boardVisitedHistory->getBoardId()->isReadOnly(),
+                    'hasPinCode' => $boardVisitedHistory->getBoardId()->hasPinCode(),
+                    'themeColor' => $boardVisitedHistory->getBoardId()->getBoard()->getThemeColor(),
                 ],
                 $this->boardVisitedHistoryRepository->findByOwner($this->getUser()->getUserIdentifier())
             );
@@ -281,7 +283,9 @@ class BoardController extends AbstractController
                     $visited[] = [
                         'id' => $boardId->getId()->toString(),
                         'title' => $boardId->getBoard()->getTitle(),
-                        'readOnly' => $boardId->isReadOnly()
+                        'readOnly' => $boardId->isReadOnly(),
+                        'hasPinCode' => $boardId->hasPinCode(),
+                        'themeColor' => $boardId->getBoard()->getThemeColor(),
                     ];
                 }
             }
@@ -294,7 +298,9 @@ class BoardController extends AbstractController
                     fn (BoardId $boardId) => [
                         'id' => $boardId->getId()->toString(),
                         'title' => $boardId->getBoard()->getTitle(),
-                        'readOnly' => $boardId->isReadOnly()
+                        'readOnly' => $boardId->isReadOnly(),
+                        'hasPinCode' => $boardId->hasPinCode(),
+                        'themeColor' => $boardId->getBoard()->getThemeColor(),
                     ],
                     $this->boardIdRepository->findByOwner($this->getUser()->getUserIdentifier())
                 ),

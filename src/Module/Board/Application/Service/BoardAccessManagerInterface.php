@@ -9,12 +9,5 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 interface BoardAccessManagerInterface
 {
-    public function hasAccess(BoardId $boardId, ?UserInterface $user): bool;
-
-    /**
-     * @throws PinCodeAccessInvalidException
-     */
-    public function keep(BoardId $boardId, string $pinCode): void;
-
-    public function clear(): void;
+    public function hasAccess(BoardId $boardId, ?UserInterface $user, ?string $pinCode): bool;
 }

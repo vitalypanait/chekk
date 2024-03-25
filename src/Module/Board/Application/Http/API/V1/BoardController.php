@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Module\Board\Application\Http\API\V1;
 
 use App\Module\Board\Application\Http\API\V1\Model\Board as BoardModel;
-use App\Module\Board\Application\Http\API\V1\Request\BoardAuthRequest;
 use App\Module\Board\Application\Http\API\V1\Request\BoardPinCodeRequest;
 use App\Module\Board\Application\Http\API\V1\Request\BoardPatchRequest;
 use App\Module\Board\Application\Http\API\V1\Response\BoardCreateResponse;
 use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Application\Service\BoardsCookieJar;
-use App\Module\Board\Application\Service\PinCodeAccessInvalidException;
 use App\Module\Board\Application\UseCase\BoardCreate\BoardCreateCommand;
 use App\Module\Board\Application\UseCase\BoardDelete\BoardDeleteCommand;
 use App\Module\Board\Application\UseCase\BoardHistoryUpdate\BoardHistoryUpdateCommand;
@@ -33,6 +31,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -82,6 +81,11 @@ class BoardController extends AbstractController
     #[Route(
         '/api/v1/board/{id}',
         methods: ['GET']
+    )]
+    #[OA\Header(
+        header: 'x-board-pin-code',
+        description: 'Pin code',
+        schema: new OA\Schema(type: 'string', example: '123445')
     )]
     #[OA\Parameter(
         name: 'id',
@@ -400,32 +404,15 @@ class BoardController extends AbstractController
         response: 200,
         description: '',
     )]
-    public function checkAccess(BoardId $boardId): Response
+    public function checkAccess(BoardId $boardId, Request $request): Response
     {
         return $this->json([
-            'access' => $this->boardAccessManager->hasAccess($boardId, $this->getUser())
+            'access' => $this->boardAccessManager->hasAccess(
+                $boardId,
+                $this->getUser(),
+                $request->headers->get('x-board-pin-code')
+            )
         ]);
-    }
-
-    #[Route(
-        '/api/v1/board/{id}/access',
-        methods: ['POST']
-    )]
-    #[OA\RequestBody(content: new OA\JsonContent(ref: new Model(type: BoardAuthRequest::class)))]
-    #[OA\Tag(name: 'Board')]
-    #[OA\Response(
-        response: 200,
-        description: '',
-    )]
-    public function access(BoardId $boardId, BoardAuthRequest $request): Response
-    {
-        try {
-            $this->boardAccessManager->keep($boardId, $request->getPinCode());
-        } catch (PinCodeAccessInvalidException $e) {
-            return $this->json(['authorized' => false]);
-        }
-
-        return $this->json(['authorized' => true]);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace App\Module\Board\Application\Http\Voter;
 use App\Module\Board\Application\Service\BoardAccessManagerInterface;
 use App\Module\Board\Domain\Entity\BoardId;
 use LogicException;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -17,7 +18,8 @@ class BoardVoter extends Voter
     public const EDIT = 'edit';
 
     public function __construct(
-        private readonly BoardAccessManagerInterface $boardAccessManager
+        private readonly BoardAccessManagerInterface $boardAccessManager,
+        private readonly RequestStack $requestStack
     ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
@@ -48,7 +50,11 @@ class BoardVoter extends Voter
     private function canView(BoardId $boardId, ?UserInterface $user): bool
     {
         if ($boardId->hasPinCode()) {
-            return $this->boardAccessManager->hasAccess($boardId, $user);
+            return $this->boardAccessManager->hasAccess(
+                $boardId,
+                $user,
+                $this->requestStack->getMainRequest()->headers->get('x-board-pin-code')
+            );
         }
 
         return true;
@@ -61,7 +67,11 @@ class BoardVoter extends Voter
         }
 
         if ($boardId->hasPinCode()) {
-            return $this->boardAccessManager->hasAccess($boardId, $user);
+            return $this->boardAccessManager->hasAccess(
+                $boardId,
+                $user,
+                $this->requestStack->getMainRequest()->headers->get('x-board-pin-code')
+            );
         }
 
         return true;

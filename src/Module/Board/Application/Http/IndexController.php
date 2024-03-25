@@ -53,8 +53,6 @@ class IndexController extends AbstractController
 
         $security->logout(false);
 
-        $this->boardAccessManager->clear();
-
         $this->boardsCookieJar->clear($response);
 
         return $response;

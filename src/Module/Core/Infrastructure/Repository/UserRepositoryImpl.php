@@ -38,6 +38,17 @@ class UserRepositoryImpl extends ServiceEntityRepository implements UserReposito
             ->getSingleResult();
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u')
+            ->andWhere('u.email = :email')
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function save(User $user): void
     {
         $this->getEntityManager()->persist($user);

@@ -72,9 +72,14 @@ class UserController extends AbstractController
     #[OA\Tag(name: 'User')]
     public function sighIn(SignInRequest $request): Response
     {
+        $user = $this->userRepository->findByEmail($request->getEmail());
         $code = $this->passwordGenerator->generate();
-        $user = $this->userRepository->getByEmail($request->getEmail());
-        $user->setPassword($this->passwordHasher, $code);
+
+        if (null === $user) {
+            $user = new User($request->getEmail());
+            $user->setPassword($this->passwordHasher, $code);
+        }
+
         $this->userRepository->save($user);
 
         $this->emailNotificator->sendHtml(

@@ -7,7 +7,7 @@ namespace App\Module\Core\Application\Http\API\V1\Request;
 use App\Module\Common\Infrastructure\Request\IdentifierInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class SignUpRequest implements IdentifierInterface
+class SignInRequest implements IdentifierInterface
 {
     #[Assert\Email()]
     private readonly string $email;

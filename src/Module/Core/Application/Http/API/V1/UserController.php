@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Module\Core\Application\Http\API\V1;
 
+use App\Module\Common\Application\Notificator\EmailNotificatorInterface;
+use App\Module\Core\Application\Http\API\V1\Request\SignInRequest;
 use App\Module\Core\Application\Http\API\V1\Request\SignUpRequest;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
+use App\Module\Core\Domain\Service\PasswordGeneratorInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +21,9 @@ class UserController extends AbstractController
 {
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly UserRepository              $userRepository
+        private readonly UserRepository              $userRepository,
+        private readonly PasswordGeneratorInterface  $passwordGenerator,
+        private readonly EmailNotificatorInterface  $emailNotificator
     ) {}
 
     /**
@@ -43,9 +48,41 @@ class UserController extends AbstractController
     public function sighUp(SignUpRequest $request): Response
     {
         $user = new User($request->getEmail());
-        $user->setPassword($this->passwordHasher, $request->getPassword());
+        $code = $this->passwordGenerator->generate();
 
-        $this->userRepository->save($user, true);
+        $user->setPassword($this->passwordHasher, $code);
+
+        $this->userRepository->save($user);
+
+        $this->emailNotificator->sendHtml(
+            $request->getEmail(),
+            'Auth to chekk',
+            'emails/auth.html.twig',
+            ['code' => $code]
+        );
+
+        return new Response($user->getUserIdentifier());
+    }
+
+    #[Route(
+        '/api/v1/sign-in',
+        name: 'signIn',
+        methods: ['POST'],
+    )]
+    #[OA\Tag(name: 'User')]
+    public function sighIn(SignInRequest $request): Response
+    {
+        $code = $this->passwordGenerator->generate();
+        $user = $this->userRepository->getByEmail($request->getEmail());
+        $user->setPassword($this->passwordHasher, $code);
+        $this->userRepository->save($user);
+
+        $this->emailNotificator->sendHtml(
+            $request->getEmail(),
+            'Auth to chekk',
+            'emails/auth.html.twig',
+            ['code' => $code]
+        );
 
         return new Response($user->getUserIdentifier());
     }

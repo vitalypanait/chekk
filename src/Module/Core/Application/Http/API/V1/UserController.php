@@ -77,9 +77,9 @@ class UserController extends AbstractController
 
         if (null === $user) {
             $user = new User($request->getEmail());
-            $user->setPassword($this->passwordHasher, $code);
         }
 
+        $user->setPassword($this->passwordHasher, $code);
         $this->userRepository->save($user);
 
         $this->emailNotificator->sendHtml(
@@ -89,6 +89,6 @@ class UserController extends AbstractController
             ['code' => $code]
         );
 
-        return new Response($user->getUserIdentifier());
+        return new Response($user->getUserIdentifier() . $code);
     }
 }

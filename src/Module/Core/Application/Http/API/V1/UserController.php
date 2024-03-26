@@ -89,6 +89,6 @@ class UserController extends AbstractController
             ['code' => $code]
         );
 
-        return new Response($user->getUserIdentifier() . $code);
+        return new Response($user->getUserIdentifier());
     }
 }

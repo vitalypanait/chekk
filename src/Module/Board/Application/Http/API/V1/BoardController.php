@@ -24,6 +24,7 @@ use App\Module\Board\Domain\Repository\BoardVisitedHistoryRepository;
 use App\Module\Board\Domain\Repository\CommentRepository;
 use App\Module\Board\Domain\Repository\TaskLabelRepository;
 use App\Module\Board\Domain\Repository\TaskRepository;
+use App\Module\Board\Infrastructure\Service\PinCodeHasher;
 use App\Module\Common\Bus\CommandBus;
 use App\Module\Core\Domain\Entity\User;
 use App\Module\Core\Domain\Repository\UserRepository;
@@ -48,7 +49,8 @@ class BoardController extends AbstractController
         private readonly BoardsCookieJar $boardsCookieJar,
         private readonly UserRepository $userRepository,
         private readonly BoardAccessManagerInterface $boardAccessManager,
-        private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository
+        private readonly BoardVisitedHistoryRepository $boardVisitedHistoryRepository,
+        private readonly PinCodeHasher $pinCodeHasher
     ) {}
 
     /**
@@ -103,6 +105,13 @@ class BoardController extends AbstractController
     #[IsGranted('view', 'boardId')]
     public function board(BoardId $boardId): Response
     {
+        /** @var ?User $user */
+        $user = $this->getUser();
+
+        if ($user !== null) {
+            $this->commandBus->execute(new BoardHistoryUpdateCommand($boardId->getId()->toString(), $user));
+        }
+
         return $this->json($this->getFormattedBoard($boardId));
     }
 
@@ -140,31 +149,6 @@ class BoardController extends AbstractController
         );
 
         return $this->json($this->getFormattedBoard($boardId));
-    }
-
-    #[Route(
-        '/api/v1/board/{id}/history',
-        methods: ['POST']
-    )]
-    #[OA\Tag(name: 'Board')]
-    #[OA\Response(
-        response: 200,
-        description: '',
-    )]
-    public function updateHistory(BoardId $boardId): Response
-    {
-        $response = new JsonResponse();
-
-        /** @var ?User $user */
-        $user = $this->getUser();
-
-        if ($user === null) {
-            $this->boardsCookieJar->addBoard($boardId->getId()->toString(), $response);
-        } else {
-            $this->commandBus->execute(new BoardHistoryUpdateCommand($boardId->getId()->toString(), $user));
-        }
-
-        return $response;
     }
 
     private function getFormattedBoard(BoardId $boardId): array
@@ -402,7 +386,7 @@ class BoardController extends AbstractController
     }
 
     #[Route(
-        '/api/v1/board/{id}/access',
+        '/api/v1/board/{id}/access/{pinCode}',
         methods: ['GET']
     )]
     #[OA\Tag(name: 'Board')]
@@ -410,13 +394,16 @@ class BoardController extends AbstractController
         response: 200,
         description: '',
     )]
-    public function checkAccess(BoardId $boardId, Request $request): Response
+    public function checkAccess(BoardId $boardId, string $pinCode): Response
     {
+        if ($boardId->getPinCode() === null) {
+            return $this->json(['access' => true]);
+        }
+
         return $this->json([
-            'access' => $this->boardAccessManager->hasAccess(
-                $boardId,
-                $this->getUser(),
-                $request->headers->get('x-board-pin-code')
+            'access' => $this->pinCodeHasher->getHasher()->verify(
+                $boardId->getPinCode(),
+                $pinCode
             )
         ]);
     }

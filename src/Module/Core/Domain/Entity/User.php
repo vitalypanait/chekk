@@ -27,6 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     private array $roles;
     private string $password;
+    private ?\DateTimeInterface $passwordUpdatedAt;
 
     public function __construct(string $email)
     {
@@ -42,6 +43,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(UserPasswordHasherInterface $passwordHasher, string $password): void
     {
         $this->password = $passwordHasher->hashPassword($this, $password);
+        $this->passwordUpdatedAt = new DateTime();
     }
 
     public function getId(): UuidInterface
@@ -66,5 +68,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    public function getPasswordUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->passwordUpdatedAt;
     }
 }

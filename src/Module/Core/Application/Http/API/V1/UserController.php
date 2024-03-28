@@ -44,13 +44,27 @@ class UserController extends AbstractController
         methods: ['POST'],
     )]
     #[OA\Tag(name: 'User')]
-    public function sighIn(SignInRequest $request): Response
+    public function sighIn(SignInRequest $request): JsonResponse
     {
         $user = $this->userRepository->findByEmail($request->getEmail());
         $code = $this->passwordGenerator->generate();
 
         if (null === $user) {
             $user = new User($request->getEmail());
+        }
+
+        if (!$this->isUpdatePasswordAvailable($user)) {
+            return $this->json([
+                'error' => [
+                    [
+                        'name' => 'code',
+                        'message' => 'declined_update_code',
+                        'context' => [
+                            'updatedAt' => $user->getPasswordUpdatedAt()->format(\DateTimeInterface::ATOM)
+                        ],
+                    ]
+                ]
+            ]);
         }
 
         $user->setPassword($this->passwordHasher, $code);
@@ -63,6 +77,15 @@ class UserController extends AbstractController
             ['code' => $code]
         );
 
-        return new Response($user->getUserIdentifier());
+        return $this->json(['email' => $user->getUserIdentifier()]);
+    }
+
+    private function isUpdatePasswordAvailable(User $user): bool
+    {
+        if (null === $user->getPasswordUpdatedAt()) {
+            return true;
+        }
+
+        return (new \DateTime())->getTimestamp() - $user->getPasswordUpdatedAt()->getTimestamp() > 30;
     }
 }
